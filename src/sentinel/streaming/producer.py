@@ -44,7 +44,7 @@ def delivery_report(err, msg) -> None:
 
 def replay_observations(
     file_path: str | Path,
-    rate: float = 10.0,
+    rate: float = 5.0,
     limit: int | None = None,
 ) -> int:
     """

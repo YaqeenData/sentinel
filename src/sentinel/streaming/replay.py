@@ -29,7 +29,7 @@ SYNTHEA_JAR = os.getenv(
 REPLAY_RATE = float(
     os.getenv(
         "REPLAY_RATE",
-        "10",
+        "5.0",
     )
 )
 
