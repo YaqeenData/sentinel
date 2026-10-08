@@ -1,59 +1,62 @@
 """
-Run the contract detector on a local Observation NDJSON file.
+Run the contract detector on historical Observation data from GCS (Bronze).
 
 Purpose: prove the contract gives NO violations on clean historical data.
 If clean data fails, the rule is wrong, not the data.
 
+Reads gs://<GCS_BUCKET>/bronze/synthea/run_id=001/Observation.ndjson
+using sentinel.ingestion.gcs, so nothing is downloaded to disk.
+
+Needs in .env: GCP_PROJECT_ID and GCS_BUCKET
+Needs once:    gcloud auth application-default login
+
 Usage:
-    python -m poetry run python scripts/check_contract_on_file.py Observation.ndjson
-    python -m poetry run python scripts/check_contract_on_file.py Observation.ndjson 1000
-        (second argument = rows per window, default 500)
+    python -m poetry run python scripts/check_contract_gcs.py
+    python -m poetry run python scripts/check_contract_gcs.py 1000
+        (argument = rows per window, default 500)
 """
 
-import json
 import sys
 from collections import Counter
 
-from sentinel.detection.contract import check
-from sentinel.transformation.observations import normalize_observation
+from dotenv import load_dotenv
+
+load_dotenv()  # gcs.py reads GCP_PROJECT_ID / GCS_BUCKET from the environment
+
+from sentinel.detection.contract import check  # noqa: E402
+from sentinel.ingestion.gcs import read_ndjson  # noqa: E402
+from sentinel.transformation.observations import normalize_observation  # noqa: E402
 
 
-def read_rows(file_path: str):
-    """Read raw FHIR Observations and yield normalized rows."""
-    with open(file_path, encoding="utf-8") as file:
-        for line in file:
-            if line.strip():
-                yield from normalize_observation(json.loads(line))
+def read_rows():
+    """Stream raw FHIR Observations from GCS and yield normalized rows."""
+    for observation in read_ndjson("Observation"):
+        yield from normalize_observation(observation)
 
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: python scripts/check_contract_on_file.py <Observation.ndjson> [rows_per_window]")
-        sys.exit(1)
-
-    file_path = sys.argv[1]
-    window_size = int(sys.argv[2]) if len(sys.argv) > 2 else 500
+    window_size = int(sys.argv[1]) if len(sys.argv) > 1 else 500
 
     total_rows = 0
     windows = 0
     bad_windows = 0
     violations = Counter()   # (field, incident_type, observed) -> bad rows
 
-    batch = []
-
     def run_window(rows):
         nonlocal windows, bad_windows
         windows += 1
         window = {"resource_type": "Observation", "window_start": f"window-{windows}", "window_end": None}
-        results = check(rows, window)
-        anomalies = [r for r in results if r["is_anomaly"]]
+        anomalies = [r for r in check(rows, window) if r["is_anomaly"]]
         if anomalies:
             bad_windows += 1
         for r in anomalies:
             key = (r["field_name"], r["incident_type"], r["current_value"])
             violations[key] += r["evidence"]["bad_rows"]
 
-    for row in read_rows(file_path):
+    print("Reading Observation.ndjson from GCS Bronze...")
+
+    batch = []
+    for row in read_rows():
         total_rows += 1
         batch.append(row)
         if len(batch) == window_size:
