@@ -93,7 +93,10 @@ CREATE TABLE IF NOT EXISTS incidents (
     schema_change_id    BIGINT NULL REFERENCES schema_history (id),
 
     CONSTRAINT chk_incidents_type
-        CHECK (incident_type IN ('null_spike', 'type_change', 'volume_drop', 'schema_change')),
+        CHECK (incident_type IN (
+            'null_spike', 'type_change', 'volume_drop', 'schema_change',
+            'numeric_drift', 'categorical_drift'
+        )),
     CONSTRAINT chk_incidents_severity
         CHECK (severity IN ('low', 'medium', 'high', 'critical')),
     CONSTRAINT chk_incidents_status
@@ -102,5 +105,3 @@ CREATE TABLE IF NOT EXISTS incidents (
 
 CREATE INDEX IF NOT EXISTS idx_incidents_status_detected
     ON incidents (status, detected_at DESC);
-
-
