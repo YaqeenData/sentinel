@@ -1,0 +1,23 @@
+# Local environment
+.env
+.venv/
+
+# Generated replay data
+data/replay/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Test/cache
+.pytest_cache/
+
+# Local outputs
+output.txt
+output_test.txt
+
+# macOS
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
