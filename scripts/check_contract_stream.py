@@ -1,0 +1,39 @@
+"""
+Run the contract detector on live Observation rows from Kafka.
+
+Same check() as scripts/check_contract_gcs.py. Only two things change:
+  - source: Kafka (consume_observations) instead of GCS
+  - window: every N seconds instead of every N rows
+
+Usage:
+    python -m poetry run python scripts/check_contract_stream.py        (60-second windows)
+    python -m poetry run python scripts/check_contract_stream.py 30     (30-second windows)
+"""
+
+import sys
+
+from sentinel.detection.contract import check
+from sentinel.streaming.consumer import consume_observations
+from sentinel.streaming.windows import tumbling_windows
+
+
+def main():
+    seconds = int(sys.argv[1]) if len(sys.argv) > 1 else 60
+    print(f"Contract check on Kafka stream, {seconds}-second windows\n")
+
+    for window, rows in tumbling_windows(consume_observations(), seconds=seconds):
+        stamp = window["window_start"][11:19]
+        anomalies = [r for r in check(rows, window) if r["is_anomaly"]]
+
+        if not anomalies:
+            print(f"[{stamp}] {len(rows):>6} rows  contract_ok")
+            continue
+
+        for r in anomalies:
+            print(f"[{stamp}] {len(rows):>6} rows  "
+                  f"{str(r['field_name']):<18} {r['incident_type']:<24} "
+                  f"got={r['current_value']}  bad_rows={r['evidence']['bad_rows']}")
+
+
+if __name__ == "__main__":
+    main()
