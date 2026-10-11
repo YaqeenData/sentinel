@@ -19,20 +19,41 @@ SCHEMA_ERROR_KINDS = ("number_as_string", "missing_patient", "invalid_status")
 INVALID_STATUS = "done"   # not an allowed FHIR Observation.status
 
 
-def corrupt(observation: dict, kind: str) -> dict:
-    """Return a broken COPY of one FHIR Observation. The original is never changed."""
+def _make_text(item: dict) -> bool:
+    """Turn the numeric value of one flat row or raw FHIR item into text. True if changed."""
+    quantity = item.get("valueQuantity")
+    if isinstance(quantity, dict) and quantity.get("value") is not None:
+        quantity["value"] = str(quantity["value"])
+        return True
+    if item.get("numeric_value") is not None:
+        item["numeric_value"] = str(item["numeric_value"])
+        return True
+    return False
+
+
+def corrupt(record: dict, kind: str) -> dict:
+    """
+    Return a broken COPY of one Observation. The original is never changed.
+
+    Works on a raw FHIR Observation and on a flat normalized row, like
+    sentinel.injection.numeric_drift. Numeric values inside "component"
+    (e.g. a blood pressure panel) are broken too.
+    """
     if kind not in SCHEMA_ERROR_KINDS:
         raise ValueError(f"Unknown schema error kind: {kind}")
 
-    broken = copy.deepcopy(observation)
+    broken = copy.deepcopy(record)
 
     if kind == "number_as_string":
-        quantity = broken.get("valueQuantity")
-        if isinstance(quantity, dict) and quantity.get("value") is not None:
-            quantity["value"] = str(quantity["value"])
+        _make_text(broken)
+        for component in broken.get("component") or []:
+            _make_text(component)
 
     elif kind == "missing_patient":
-        broken["subject"] = {"reference": ""}
+        if "subject" in broken or broken.get("resourceType") == "Observation":
+            broken["subject"] = {"reference": ""}          # raw FHIR
+        else:
+            broken["patient_id"] = None                     # flat row
 
     elif kind == "invalid_status":
         broken["status"] = INVALID_STATUS
