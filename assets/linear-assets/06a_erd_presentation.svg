@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" font-family="Inter, 'Segoe UI', Arial, Helvetica, sans-serif">
+<title>Monitoring Database — Overview</title>
+<rect id="background" x="0" y="0" width="1600" height="900" fill="#07111F"/>
+<g id="connectors">
+<g id="edge-quality_metrics.id-incidents.quality_metric_id"><polyline points="460.0,214.0 535.0,214.0 535.0,448.0 610.0,448.0" fill="none" stroke="#22D3EE" stroke-width="1.6" stroke-linejoin="round"/><text font-size="13" font-weight="700" fill="#F1F5F9" text-anchor="middle" x="482.0" y="206.0">1</text><text font-size="13" font-weight="700" fill="#F1F5F9" text-anchor="middle" x="588.0" y="440.0">0..*</text></g>
+<g id="edge-baseline_metrics.id-incidents.baseline_metric_id"><polyline points="460.0,584.0 535.0,584.0 535.0,484.0 610.0,484.0" fill="none" stroke="#22D3EE" stroke-width="1.6" stroke-linejoin="round"/><text font-size="13" font-weight="700" fill="#F1F5F9" text-anchor="middle" x="482.0" y="576.0">1</text><text font-size="13" font-weight="700" fill="#F1F5F9" text-anchor="middle" x="588.0" y="476.0">0..*</text></g>
+<g id="edge-schema_history.id-incidents.schema_change_id"><polyline points="1140.0,214.0 1065.0,214.0 1065.0,520.0 990.0,520.0" fill="none" stroke="#22D3EE" stroke-width="1.6" stroke-linejoin="round"/><text font-size="13" font-weight="700" fill="#F1F5F9" text-anchor="middle" x="1118.0" y="206.0">1</text><text font-size="13" font-weight="700" fill="#F1F5F9" text-anchor="middle" x="1012.0" y="512.0">0..1</text></g>
+<g id="edge-quality_metrics.metric_value-baseline_metrics"><polyline points="270.0,340.0 270.0,520.0" fill="none" stroke="#94A3B8" stroke-width="1.6" stroke-dasharray="6 4" stroke-linejoin="round"/><rect x="177.6" y="402.6" width="184.7" height="54.8" rx="3" fill="#07111F"/><text font-size="13" fill="#94A3B8" text-anchor="middle"><tspan x="270.0" y="418.0">compared on</tspan><tspan x="270.0" y="434.2">metric_name + field_name</tspan><tspan x="270.0" y="450.5">(logical, no FK)</tspan></text></g>
+</g>
+<g id="title"><text font-size="30" fill="#F1F5F9" text-anchor="start" font-weight="700"><tspan x="62.0" y="56.3">Monitoring Database — Overview</tspan></text></g>
+<g id="subtitle"><text font-size="16" fill="#94A3B8" text-anchor="start" font-style="italic"><tspan x="62.0" y="88.0">PostgreSQL stores monitoring state only — no patient or clinical tables</tspan></text></g>
+<g id="quality_metrics"><rect x="80" y="150" width="380" height="46" rx="4" fill="#17283D" stroke="#22D3EE" stroke-width="1.5"/><text font-size="18" fill="#F1F5F9" text-anchor="start" font-weight="700"><tspan x="94.0" y="178.6">quality_metrics</tspan></text></g>
+<g id="quality_metrics.id"><rect x="80" y="196" width="380" height="36" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="quality_metrics.id-key"><text font-size="14" fill="#22D3EE" text-anchor="start" font-weight="700"><tspan x="90.0" y="218.3">PK</tspan></text></g>
+<g id="quality_metrics.id-name"><text font-size="16" fill="#F1F5F9" text-anchor="start" font-weight="700"><tspan x="126.0" y="219.0">id</tspan></text></g>
+<g id="quality_metrics.window_start"><rect x="80" y="232" width="380" height="36" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="quality_metrics.window_start-name"><text font-size="16" fill="#F1F5F9" text-anchor="start"><tspan x="126.0" y="255.0">window_start · window_end</tspan></text></g>
+<g id="quality_metrics.metric_name"><rect x="80" y="268" width="380" height="36" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="quality_metrics.metric_name-name"><text font-size="16" fill="#F1F5F9" text-anchor="start"><tspan x="126.0" y="291.0">metric_name · field_name</tspan></text></g>
+<g id="quality_metrics.metric_value"><rect x="80" y="304" width="380" height="36" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="quality_metrics.metric_value-name"><text font-size="16" fill="#F1F5F9" text-anchor="start"><tspan x="126.0" y="327.0">metric_value</tspan></text></g>
+<g id="baseline_metrics"><rect x="80" y="520" width="380" height="46" rx="4" fill="#17283D" stroke="#22D3EE" stroke-width="1.5"/><text font-size="18" fill="#F1F5F9" text-anchor="start" font-weight="700"><tspan x="94.0" y="548.6">baseline_metrics</tspan></text></g>
+<g id="baseline_metrics.id"><rect x="80" y="566" width="380" height="36" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="baseline_metrics.id-key"><text font-size="14" fill="#22D3EE" text-anchor="start" font-weight="700"><tspan x="90.0" y="588.3">PK</tspan></text></g>
+<g id="baseline_metrics.id-name"><text font-size="16" fill="#F1F5F9" text-anchor="start" font-weight="700"><tspan x="126.0" y="589.0">id</tspan></text></g>
+<g id="baseline_metrics.metric_name"><rect x="80" y="602" width="380" height="36" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="baseline_metrics.metric_name-name"><text font-size="16" fill="#F1F5F9" text-anchor="start"><tspan x="126.0" y="625.0">metric_name · field_name</tspan></text></g>
+<g id="baseline_metrics.baseline_value"><rect x="80" y="638" width="380" height="36" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="baseline_metrics.baseline_value-name"><text font-size="16" fill="#F1F5F9" text-anchor="start"><tspan x="126.0" y="661.0">baseline_value</tspan></text></g>
+<g id="baseline_metrics.lower"><rect x="80" y="674" width="380" height="36" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="baseline_metrics.lower-name"><text font-size="16" fill="#F1F5F9" text-anchor="start"><tspan x="126.0" y="697.0">lower / upper threshold</tspan></text></g>
+<g id="incidents"><rect x="610" y="240" width="380" height="46" rx="4" fill="#17283D" stroke="#22D3EE" stroke-width="1.5"/><text font-size="18" fill="#F1F5F9" text-anchor="start" font-weight="700"><tspan x="624.0" y="268.6">incidents</tspan></text></g>
+<g id="incidents.id"><rect x="610" y="286" width="380" height="36" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="incidents.id-key"><text font-size="14" fill="#22D3EE" text-anchor="start" font-weight="700"><tspan x="620.0" y="308.3">PK</tspan></text></g>
+<g id="incidents.id-name"><text font-size="16" fill="#F1F5F9" text-anchor="start" font-weight="700"><tspan x="656.0" y="309.0">id</tspan></text></g>
+<g id="incidents.detected_at"><rect x="610" y="322" width="380" height="36" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="incidents.detected_at-name"><text font-size="16" fill="#F1F5F9" text-anchor="start"><tspan x="656.0" y="345.0">detected_at · incident_type</tspan></text></g>
+<g id="incidents.severity"><rect x="610" y="358" width="380" height="36" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="incidents.severity-name"><text font-size="16" fill="#F1F5F9" text-anchor="start"><tspan x="656.0" y="381.0">severity · status</tspan></text></g>
+<g id="incidents.observed"><rect x="610" y="394" width="380" height="36" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="incidents.observed-name"><text font-size="16" fill="#F1F5F9" text-anchor="start"><tspan x="656.0" y="417.0">observed vs baseline value</tspan></text></g>
+<g id="incidents.quality_metric_id"><rect x="610" y="430" width="380" height="36" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="incidents.quality_metric_id-key"><text font-size="14" fill="#22D3EE" text-anchor="start" font-weight="700"><tspan x="620.0" y="452.3">FK</tspan></text></g>
+<g id="incidents.quality_metric_id-name"><text font-size="16" fill="#F1F5F9" text-anchor="start"><tspan x="656.0" y="453.0">quality_metric_id</tspan></text></g>
+<g id="incidents.baseline_metric_id"><rect x="610" y="466" width="380" height="36" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="incidents.baseline_metric_id-key"><text font-size="14" fill="#22D3EE" text-anchor="start" font-weight="700"><tspan x="620.0" y="488.3">FK</tspan></text></g>
+<g id="incidents.baseline_metric_id-name"><text font-size="16" fill="#F1F5F9" text-anchor="start"><tspan x="656.0" y="489.0">baseline_metric_id</tspan></text></g>
+<g id="incidents.schema_change_id"><rect x="610" y="502" width="380" height="36" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="incidents.schema_change_id-key"><text font-size="14" fill="#22D3EE" text-anchor="start" font-weight="700"><tspan x="620.0" y="524.3">FK</tspan></text></g>
+<g id="incidents.schema_change_id-name"><text font-size="16" fill="#F1F5F9" text-anchor="start"><tspan x="656.0" y="525.0">schema_change_id</tspan></text></g>
+<g id="schema_history"><rect x="1140" y="150" width="380" height="46" rx="4" fill="#17283D" stroke="#22D3EE" stroke-width="1.5"/><text font-size="18" fill="#F1F5F9" text-anchor="start" font-weight="700"><tspan x="1154.0" y="178.6">schema_history</tspan></text></g>
+<g id="schema_history.id"><rect x="1140" y="196" width="380" height="36" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="schema_history.id-key"><text font-size="14" fill="#22D3EE" text-anchor="start" font-weight="700"><tspan x="1150.0" y="218.3">PK</tspan></text></g>
+<g id="schema_history.id-name"><text font-size="16" fill="#F1F5F9" text-anchor="start" font-weight="700"><tspan x="1186.0" y="219.0">id</tspan></text></g>
+<g id="schema_history.observed_at"><rect x="1140" y="232" width="380" height="36" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="schema_history.observed_at-name"><text font-size="16" fill="#F1F5F9" text-anchor="start"><tspan x="1186.0" y="255.0">observed_at · field_name</tspan></text></g>
+<g id="schema_history.previous_type"><rect x="1140" y="268" width="380" height="36" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="schema_history.previous_type-name"><text font-size="16" fill="#F1F5F9" text-anchor="start"><tspan x="1186.0" y="291.0">previous_type → observed_type</tspan></text></g>
+<g id="schema_history.change_type"><rect x="1140" y="304" width="380" height="36" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="schema_history.change_type-name"><text font-size="16" fill="#F1F5F9" text-anchor="start"><tspan x="1186.0" y="327.0">change_type</tspan></text></g>
+<g id="legend"><text font-size="14" fill="#94A3B8" text-anchor="start"><tspan x="82.0" y="837.3">PK primary key · FK foreign key · 1 / 0..* / 0..1 cardinality · incident FKs are nullable — which one is set depends on incident_type</tspan></text></g>
+</svg>
