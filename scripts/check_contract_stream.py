@@ -21,7 +21,9 @@ def main():
     seconds = int(sys.argv[1]) if len(sys.argv) > 1 else 60
     print(f"Contract check on Kafka stream, {seconds}-second windows\n")
 
-    for window, rows in tumbling_windows(consume_observations(), seconds=seconds):
+    for w in tumbling_windows(consume_observations(), window_seconds=seconds):
+        rows = w.rows
+        window = {"resource_type": "Observation", "window_start": w.window_start.isoformat(), "window_end": w.window_end.isoformat()}
         stamp = window["window_start"][11:19]
         anomalies = [r for r in check(rows, window) if r["is_anomaly"]]
 

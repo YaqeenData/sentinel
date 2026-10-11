@@ -1,42 +1,74 @@
-"""
-Group a stream of rows into fixed, non-overlapping (tumbling) time windows.
-
-Uses processing time (when Sentinel receives the row), not the clinical time
-inside the FHIR resource, because the producer replays historical data.
-
-Note: a window closes when the next row arrives after its end.
-If the stream goes quiet, the last window waits for the next message.
-"""
-
-import time
-from collections.abc import Iterable, Iterator
-from datetime import datetime, timezone
+from collections.abc import Callable, Iterable, Iterator
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta, timezone
 
 
-def _iso(ts: float) -> str:
-    return datetime.fromtimestamp(ts, tz=timezone.utc).isoformat()
+@dataclass
+class Window:
+    """
+    One completed tumbling window and the rows that arrived in it.
+    """
+
+    window_start: datetime
+    window_end: datetime
+    rows: list[dict] = field(default_factory=list)
 
 
-def _window(start: float, end: float, resource_type: str) -> dict:
-    return {"resource_type": resource_type, "window_start": _iso(start), "window_end": _iso(end)}
+def utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def floor_to_window(
+    timestamp: datetime,
+    window_seconds: int,
+) -> datetime:
+    """
+    Round a timestamp down to the start of its window.
+
+    Example with 60-second windows:
+    14:00:23 -> 14:00:00
+    """
+
+    epoch_seconds = int(timestamp.timestamp())
+    window_start_seconds = epoch_seconds - (epoch_seconds % window_seconds)
+
+    return datetime.fromtimestamp(
+        window_start_seconds,
+        tz=timezone.utc,
+    )
 
 
 def tumbling_windows(
     rows: Iterable[dict],
-    seconds: int = 60,
-    resource_type: str = "Observation",
-) -> Iterator[tuple[dict, list[dict]]]:
-    """Yield (window, rows) every `seconds` of processing time."""
-    batch: list[dict] = []
-    start = time.time()
+    window_seconds: int = 60,
+    clock: Callable[[], datetime] = utc_now,
+) -> Iterator[Window]:
+    """
+    Group incoming rows into tumbling windows by arrival time.
+
+    A window is yielded when the first row of a later window arrives.
+    """
+
+    if window_seconds <= 0:
+        raise ValueError("window_seconds must be greater than 0.")
+
+    current: Window | None = None
 
     for row in rows:
-        now = time.time()
-        if now - start >= seconds:
-            if batch:
-                yield _window(start, now, resource_type), batch
-            batch, start = [], now
-        batch.append(row)
+        start = floor_to_window(clock(), window_seconds)
 
-    if batch:
-        yield _window(start, time.time(), resource_type), batch
+        if current is None:
+            current = Window(
+                window_start=start,
+                window_end=start + timedelta(seconds=window_seconds),
+            )
+
+        elif start >= current.window_end:
+            yield current
+
+            current = Window(
+                window_start=start,
+                window_end=start + timedelta(seconds=window_seconds),
+            )
+
+        current.rows.append(row)
