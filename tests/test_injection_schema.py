@@ -71,3 +71,30 @@ def test_unknown_kind_is_rejected():
 
 def test_all_kinds_are_listed():
     assert set(SCHEMA_ERROR_KINDS) == {"number_as_string", "missing_patient", "invalid_status"}
+
+
+def blood_pressure_panel() -> dict:
+    """Raw FHIR panel: the values live inside "component", not in valueQuantity."""
+    obs = fhir_observation("bp-1")
+    del obs["valueQuantity"]
+    obs["code"] = {"coding": [{"system": "http://loinc.org", "code": "85354-9", "display": "Blood pressure panel"}]}
+    obs["component"] = [
+        {"code": {"coding": [{"code": "8480-6", "display": "Systolic"}]}, "valueQuantity": {"value": 120, "unit": "mm[Hg]"}},
+        {"code": {"coding": [{"code": "8462-4", "display": "Diastolic"}]}, "valueQuantity": {"value": 80, "unit": "mm[Hg]"}},
+    ]
+    return obs
+
+
+def test_number_as_string_breaks_values_inside_components():
+    broken = corrupt(blood_pressure_panel(), "number_as_string")
+
+    assert [c["valueQuantity"]["value"] for c in broken["component"]] == ["120", "80"]
+
+
+def test_flat_rows_can_be_corrupted_too():
+    row = {"observation_id": "obs-1", "patient_id": "patient-1", "status": "final",
+           "code": "29463-7", "value_type": "numeric", "numeric_value": 72.5}
+
+    assert corrupt(row, "number_as_string")["numeric_value"] == "72.5"
+    assert corrupt(row, "missing_patient")["patient_id"] is None
+    assert corrupt(row, "invalid_status")["status"] == "done"
