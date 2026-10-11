@@ -154,3 +154,32 @@ def check(rows: list[dict], window: dict, baseline: dict | None = None) -> list[
         })
 
     return results
+
+# Handoff to storage (save_incident in sentinel.storage.posgres)
+
+STORAGE_INCIDENT_TYPE = "contract_violation"
+
+
+def to_incident(result: dict) -> dict:
+    """Turn one contract anomaly into keyword arguments for save_incident().
+
+    observed_value = number of bad rows, baseline_value = None (no baseline),
+    and the contract problem type with expected/observed goes in message.
+    """
+    if not result.get("is_anomaly"):
+        raise ValueError("Only contract anomalies can be saved as incidents.")
+
+    evidence = result["evidence"]
+    return {
+        "resource_type": result["resource_type"],
+        "incident_type": STORAGE_INCIDENT_TYPE,
+        "severity": result["severity"],
+        "field_name": result["field_name"],
+        "observed_value": float(evidence["bad_rows"]),
+        "baseline_value": None,
+        "message": (
+            f"{result['incident_type']}: expected {result['baseline_value']}, "
+            f"got {result['current_value']} "
+            f"({evidence['bad_rows']} of {evidence['total_rows']} rows)"
+        ),
+    }
