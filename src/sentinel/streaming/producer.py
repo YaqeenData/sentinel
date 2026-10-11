@@ -1,7 +1,9 @@
 import json
 import os
 import time
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 from confluent_kafka import Producer
 from dotenv import load_dotenv
@@ -46,6 +48,11 @@ def replay_observations(
     file_path: str | Path,
     rate: float = 5.0,
     limit: int | None = None,
+    transform: Callable[
+        [dict[str, Any]],
+        dict[str, Any],
+    ]
+    | None = None,
 ) -> int:
     """
     Replay raw Synthea FHIR Observation resources into Kafka.
@@ -62,6 +69,15 @@ def replay_observations(
     limit:
         Optional maximum number of observations to publish.
         None means publish the entire file.
+
+    transform:
+        Optional function applied to each FHIR Observation
+        immediately before it is published to Kafka.
+
+        This can be used by the live-data simulator for
+        controlled failure injection while keeping the
+        producer itself independent of any specific
+        injection strategy.
 
     Returns
     -------
@@ -92,6 +108,11 @@ def replay_observations(
     print(f"Topic: {KAFKA_TOPIC}")
     print(f"Rate: {rate} observations/second")
 
+    if transform is not None:
+        print(
+            "Transform: enabled"
+        )
+
     with path.open(
         "r",
         encoding="utf-8",
@@ -99,7 +120,10 @@ def replay_observations(
 
         for line in file:
 
-            if limit is not None and sent >= limit:
+            if (
+                limit is not None
+                and sent >= limit
+            ):
                 break
 
             line = line.strip()
@@ -107,17 +131,42 @@ def replay_observations(
             if not line:
                 continue
 
-            observation = json.loads(line)
+            observation = json.loads(
+                line
+            )
 
-            # The topic is specifically for FHIR Observations.
-            if observation.get("resourceType") != "Observation":
+            # The Kafka topic is specifically
+            # for FHIR Observations.
+            if (
+                observation.get(
+                    "resourceType"
+                )
+                != "Observation"
+            ):
                 continue
 
-            observation_id = observation.get("id")
+            # Optional upstream transformation.
+            #
+            # Sentinel's live simulator can use
+            # this hook for controlled failure
+            # injection before the resource enters
+            # Kafka.
+            #
+            # The downstream detector remains
+            # completely unaware of the injection.
+            if transform is not None:
+                observation = transform(
+                    observation
+                )
+
+            observation_id = (
+                observation.get("id")
+            )
 
             if not observation_id:
                 print(
-                    "\nSkipping Observation without an id."
+                    "\nSkipping Observation "
+                    "without an id."
                 )
                 continue
 
@@ -127,10 +176,14 @@ def replay_observations(
                 try:
                     producer.produce(
                         topic=KAFKA_TOPIC,
-                        key=observation_id.encode("utf-8"),
+                        key=observation_id.encode(
+                            "utf-8"
+                        ),
                         value=json.dumps(
                             observation
-                        ).encode("utf-8"),
+                        ).encode(
+                            "utf-8"
+                        ),
                         callback=delivery_report,
                     )
 
@@ -149,13 +202,16 @@ def replay_observations(
                 flush=True,
             )
 
-            time.sleep(delay)
+            time.sleep(
+                delay
+            )
 
     remaining = producer.flush()
 
     if remaining:
         raise RuntimeError(
-            f"{remaining} Kafka messages were not delivered."
+            f"{remaining} Kafka messages "
+            "were not delivered."
         )
 
     print(

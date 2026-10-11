@@ -1,11 +1,20 @@
 import os
+import random
 import shutil
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any, Callable
 
+import yaml
 from dotenv import load_dotenv
 
+from sentinel.injection.control import (
+    is_injection_enabled,
+)
+from sentinel.injection.fhir_categorical import (
+    inject_fhir_categorical_observation,
+)
 from sentinel.streaming.producer import (
     replay_observations,
 )
@@ -22,6 +31,12 @@ REPLAY_ROOT = (
     / "replay"
 )
 
+CONFIG_PATH = (
+    PROJECT_ROOT
+    / "config"
+    / "monitoring.yaml"
+)
+
 SYNTHEA_JAR = os.getenv(
     "SYNTHEA_JAR"
 )
@@ -29,16 +44,30 @@ SYNTHEA_JAR = os.getenv(
 REPLAY_RATE = float(
     os.getenv(
         "REPLAY_RATE",
-        "5.0",
+        "50.0",
     )
 )
 
 SYNTHEA_POPULATION = int(
     os.getenv(
         "SYNTHEA_POPULATION",
-        "20",
+        "200",
     )
 )
+
+
+def load_categorical_config() -> dict[str, Any]:
+    """
+    Load categorical-drift configuration.
+    """
+
+    with CONFIG_PATH.open(
+        "r",
+        encoding="utf-8",
+    ) as file:
+        config = yaml.safe_load(file)
+
+    return config["categorical_drift"]
 
 
 def validate_environment() -> Path:
@@ -180,13 +209,124 @@ def cleanup_batch(
         )
 
 
+def build_live_transform(
+    config: dict[str, Any],
+) -> Callable[
+    [dict[str, Any]],
+    dict[str, Any],
+]:
+    """
+    Build the live controlled-failure transform.
+
+    Injection state is checked for every Observation,
+    so it can be switched on or off while the producer
+    is already running.
+    """
+
+    observation_code = (
+        config["observation"]["code"]
+    )
+
+    source_category = (
+        config["injection"]
+        ["source_category"]
+        ["code"]
+    )
+
+    target_category = (
+        config["injection"]
+        ["target_category"]
+        ["code"]
+    )
+
+    target_display = (
+        config["injection"]
+        ["target_category"]
+        ["display"]
+    )
+
+    fraction = float(
+        config["injection"]["fraction"]
+    )
+
+    seed = int(
+        config["injection"]["seed"]
+    )
+
+    if not 0 <= fraction <= 1:
+        raise ValueError(
+            "Injection fraction must be "
+            "between 0 and 1."
+        )
+
+    rng = random.Random(seed)
+
+    last_state: bool | None = None
+
+    def transform(
+        observation: dict[str, Any],
+    ) -> dict[str, Any]:
+        nonlocal last_state
+
+        enabled = is_injection_enabled()
+
+        if enabled != last_state:
+            print()
+
+            print(
+                "Controlled categorical injection: "
+                + (
+                    "ON"
+                    if enabled
+                    else "OFF"
+                )
+            )
+
+            if enabled:
+                print(
+                    f"Injecting approximately "
+                    f"{fraction:.0%} of eligible "
+                    f"{source_category} → "
+                    f"{target_category}"
+                )
+
+            last_state = enabled
+
+        if not enabled:
+            return observation
+
+        # Each eligible Observation has the configured
+        # probability of being transformed.
+        if rng.random() >= fraction:
+            return observation
+
+        return inject_fhir_categorical_observation(
+            observation,
+            observation_code=observation_code,
+            source_category=source_category,
+            target_category=target_category,
+            target_display=target_display,
+        )
+
+    return transform
+
+
 def run_forever() -> None:
     """
     Continuously generate fresh Synthea batches
     and replay their FHIR Observations into Kafka.
+
+    Controlled categorical failure injection can
+    be toggled while this process remains running.
     """
 
     jar_path = validate_environment()
+
+    config = load_categorical_config()
+
+    transform = build_live_transform(
+        config
+    )
 
     REPLAY_ROOT.mkdir(
         parents=True,
@@ -195,14 +335,26 @@ def run_forever() -> None:
 
     print("\nSentinel Live Data Simulator")
     print("=" * 60)
+
     print(
         f"Patients per batch: "
         f"{SYNTHEA_POPULATION}"
     )
+
     print(
         f"Replay rate: "
         f"{REPLAY_RATE} observations/sec"
     )
+
+    print(
+        "Controlled injection: "
+        + (
+            "ON"
+            if is_injection_enabled()
+            else "OFF"
+        )
+    )
+
     print(
         "Press Ctrl+C to stop."
     )
@@ -239,6 +391,7 @@ def run_forever() -> None:
             replay_observations(
                 file_path=observation_file,
                 rate=REPLAY_RATE,
+                transform=transform,
             )
 
             cleanup_batch(
