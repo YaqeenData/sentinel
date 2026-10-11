@@ -1,4 +1,6 @@
-from sentinel.detection.contract import check
+import pytest
+
+from sentinel.detection.contract import check, to_incident
 
 
 WINDOW = {
@@ -81,3 +83,26 @@ def test_categorical_row_is_valid():
     results = check([row], WINDOW)
 
     assert results[0]["is_anomaly"] is False
+
+
+
+def test_anomaly_becomes_a_storable_incident():
+    rows = [healthy_row(), healthy_row(observation_id="obs-2", numeric_value="72.5")]
+    result = check(rows, WINDOW)[0]
+
+    incident = to_incident(result)
+
+    assert incident["incident_type"] == "contract_violation"
+    assert incident["field_name"] == "numeric_value"
+    assert incident["observed_value"] == 1.0
+    assert incident["baseline_value"] is None
+    assert incident["severity"] == "critical"
+    assert "type_mismatch" in incident["message"]
+    assert "1 of 2 rows" in incident["message"]
+
+
+def test_healthy_window_is_not_saved_as_incident():
+    result = check([healthy_row()], WINDOW)[0]
+
+    with pytest.raises(ValueError):
+        to_incident(result)
