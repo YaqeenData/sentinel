@@ -19,6 +19,8 @@ function DeepDive({
 }
 
 export function CaseStudyPage() {
+  const base = import.meta.env.BASE_URL;
+
   return (
     <div className="page-wrap">
       {/* ─────────────────────────────────────────────
