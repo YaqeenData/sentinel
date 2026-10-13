@@ -1,0 +1,39 @@
+categorical_drift:
+  observation:
+    code: "72166-2"
+    display: "Tobacco smoking status"
+
+  field_name: "categorical_code"
+
+  detection:
+    method: "jensen_shannon_distance"
+    threshold: 0.20
+    min_samples: 100
+
+  baseline:
+    level: "latest_status_per_patient"
+    proportions:
+      "266919005": 0.756303
+      "8517006": 0.235294
+      "449868002": 0.008403
+
+  injection:
+    source_category:
+      code: "266919005"
+      display: "Never smoked tobacco (finding)"
+
+    target_category:
+      code: "8517006"
+      display: "Ex-smoker (finding)"
+
+    fraction: 0.50
+    seed: 42
+
+  incident:
+    type: "categorical_drift"
+    metric_name: "jensen_shannon_distance"
+    severity: "medium"
+
+contract:
+  enabled: true
+  resource_type: "Observation"
