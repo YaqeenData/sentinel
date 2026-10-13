@@ -202,10 +202,14 @@ def get_incident_history(
     metric_name: str | None = None,
     limit: int = 1000,
     connection: psycopg.Connection | None = None,
+    resource_type: str | None = None,
 ) -> list[dict]:
     """
-    Incidents of one type (and metric), oldest first — the persisted
-    metric values at detection time. Used for detector trend charts.
+    Incidents of one type (and metric, and resource), oldest first — the
+    persisted metric values at detection time. Used for detector trend charts.
+
+    resource_type matters when two detectors share an incident type, e.g.
+    categorical_drift on Observation (smoking) and on Encounter (class).
     """
 
     rows = _fetch_all(
@@ -214,10 +218,16 @@ def get_incident_history(
         {_INCIDENT_FROM}
         WHERE i.incident_type = %(incident_type)s
           AND (%(metric_name)s::text IS NULL OR i.metric_name = %(metric_name)s::text)
+          AND (%(resource_type)s::text IS NULL OR r.resource_type = %(resource_type)s::text)
         ORDER BY i.detected_at DESC, i.id DESC
         LIMIT %(limit)s;
         """,
-        {"incident_type": incident_type, "metric_name": metric_name, "limit": limit},
+        {
+            "incident_type": incident_type,
+            "metric_name": metric_name,
+            "resource_type": resource_type,
+            "limit": limit,
+        },
         connection,
     )
     return list(reversed(rows))
@@ -322,11 +332,16 @@ def load_dashboard_snapshot(
     categorical_metric_name: str | None,
     categorical_field_name: str | None,
     incident_limit: int = 500,
+    encounter_metric_name: str = "jensen_shannon_distance",
+    encounter_field_name: str = "class_code",
 ) -> dict[str, Any]:
     """
     Everything the dashboard renders, read over a single connection.
     Categorical arguments come from monitoring.yaml; pass ``None`` when the
     categorical detector is not configured.
+
+    The Encounter class drift values (JSD per window and its incidents)
+    are read too; they are empty until the monitor writes them.
     """
 
     with get_connection() as connection:
@@ -343,10 +358,27 @@ def load_dashboard_snapshot(
             "data_as_of": get_data_as_of(connection),
             "categorical_history": [],
             "categorical_window_series": [],
+            # Encounter class drift: JSD of every judged window, and its
+            # incidents (categorical_drift on Encounter), oldest first.
+            "encounter_window_series": [
+                row
+                for row in get_metric_series(
+                    encounter_metric_name,
+                    encounter_field_name,
+                    connection=connection,
+                )
+                if row["resource_type"] == "Encounter"
+            ],
+            "encounter_history": get_incident_history(
+                "categorical_drift",
+                encounter_metric_name,
+                connection=connection,
+                resource_type="Encounter",
+            ),
             "contract_violation_series": get_metric_series(
-            "contract_violation_count",
-            None,
-            connection=connection,
+                "contract_violation_count",
+                None,
+                connection=connection,
             ),
             "contract_rows_checked_series": get_metric_series(
                 "contract_rows_checked",
@@ -354,11 +386,16 @@ def load_dashboard_snapshot(
                 connection=connection,
             ),
         }
-        
 
+        # The categorical_drift block in monitoring.yaml is the Observation
+        # (smoking) check. Encounter class drift writes the same incident
+        # type, so the history is limited to Observation.
         if categorical_incident_type:
             snapshot["categorical_history"] = get_incident_history(
-                categorical_incident_type, categorical_metric_name, connection=connection
+                categorical_incident_type,
+                categorical_metric_name,
+                connection=connection,
+                resource_type="Observation",
             )
         if categorical_metric_name:
             snapshot["categorical_window_series"] = get_metric_series(

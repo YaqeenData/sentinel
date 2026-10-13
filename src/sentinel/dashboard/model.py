@@ -71,6 +71,7 @@ _LABELS = {
     "latest_status_per_patient": "Latest status per patient",
     "ks_statistic": "KS Statistic",
     "null_rate": "Null Rate",
+    "class_code": "Encounter class",
 }
 
 
@@ -101,6 +102,33 @@ DETECTORS: tuple[Detector, ...] = (
             "type_mismatch",
         ),
         ("contract",),
+    ),
+    # Same incident types as "contract", on Patient rows.
+    # Kept after "contract" so DETECTORS[0] stays the Observation contract.
+    Detector(
+        "patient_contract",
+        "Patient contract validation",
+        "Required fields · allowed gender · valid birth date · marital status",
+        "Deterministic FHIR contract validation",
+        (
+            "missing_required_field",
+            "invalid_value",
+            "type_mismatch",
+        ),
+        ("patient_contract",),
+    ),
+    # Same incident types as "contract", on Encounter rows.
+    Detector(
+        "encounter_contract",
+        "Encounter contract validation",
+        "Required fields · status · class · start/end time · unique id",
+        "Deterministic FHIR contract validation",
+        (
+            "missing_required_field",
+            "invalid_value",
+            "type_mismatch",
+        ),
+        ("encounter_contract",),
     ),
     Detector(
         "null_spike",
@@ -133,6 +161,17 @@ DETECTORS: tuple[Detector, ...] = (
         "Jensen–Shannon distance + threshold",
         ("categorical_drift",),
         ("categorical_drift",),
+    ),
+    # Same incident type as "categorical_drift", on Encounter rows.
+    # The resource decides which one an incident belongs to
+    # (views._detector_for).
+    Detector(
+        "encounter_class_drift",
+        "Encounter class drift",
+        "Share of each encounter class (AMB, EMER, IMP, ...) in the last 1000 encounters",
+        "Jensen–Shannon distance vs Silver baseline + threshold",
+        ("categorical_drift",),
+        ("encounter_class_drift",),
     ),
 )
 
@@ -265,6 +304,171 @@ def categorical_settings(config: dict) -> dict[str, Any] | None:
         raise ValueError(
             f"monitoring.yaml is missing categorical_drift key {missing}"
         ) from None
+
+def numeric_settings(config: dict) -> dict[str, Any] | None:
+    """
+    Flatten the ``numeric_drift`` block into what the UI needs.
+
+    Returns ``None`` when the block is absent. Raises ``ValueError`` naming
+    the missing key when the block exists but is incomplete.
+    """
+
+    block = config.get("numeric_drift")
+    if not block:
+        return None
+    try:
+        observations = {
+            str(observation["code"]): {
+                "display": observation["display"],
+                "unit": observation.get("unit", ""),
+            }
+            for observation in block["observations"]
+        }
+        severity_thresholds = {
+            level: float(value)
+            for level, value in block["severity"].items()
+        }
+        return {
+            "resource_type": block["resource_type"],
+            "field_name": block["field_name"],
+            "observations": observations,
+            "method": block["detection"]["method"],
+            "alpha": float(block["detection"]["alpha"]),
+            "min_effect": float(block["detection"]["min_effect"]),
+            "min_samples": int(block["detection"]["min_samples"]),
+            "severity_thresholds": severity_thresholds,
+            "incident_type": block["incident"]["type"],
+            "metric_name": block["incident"]["metric_name"],
+        }
+    except KeyError as missing:
+        raise ValueError(
+            f"monitoring.yaml is missing numeric_drift key {missing}"
+        ) from None
+
+
+# Readable names for FHIR v3 ActCode encounter classes.
+ENCOUNTER_CLASS_LABELS = {
+    "AMB": "Ambulatory",
+    "EMER": "Emergency",
+    "IMP": "Inpatient",
+    "HH": "Home health",
+    "VR": "Virtual",
+    "ACUTE": "Inpatient acute",
+    "NONAC": "Inpatient non-acute",
+    "OBSENC": "Observation encounter",
+    "PRENC": "Pre-admission",
+    "SS": "Short stay",
+    "FLD": "Field",
+}
+
+BASELINES_FILE_NAME = "baselines.json"
+
+
+def load_silver_baselines(config_path: Path | None = None) -> dict | None:
+    """config/baselines.json (built from Silver), or None when it is missing."""
+
+    path = (config_path or resolve_config_path()).parent / BASELINES_FILE_NAME
+    if not path.is_file():
+        return None
+    try:
+        with open(path, "r", encoding="utf-8") as file:
+            return json.load(file)
+    except (OSError, ValueError):
+        return None
+
+
+def encounter_class_settings(
+    config: dict,
+    baselines: dict | None,
+) -> dict[str, Any] | None:
+    """
+    Flatten the ``encounter_class_drift`` block plus the Silver class
+    proportions into what the UI needs.
+
+    Returns ``None`` when the block or the Silver proportions are missing,
+    the same rule the monitor uses to switch the check off.
+    """
+
+    block = config.get("encounter_class_drift")
+    silver = (baselines or {}).get("encounter_class") or {}
+    proportions = silver.get("proportions")
+    if not block or not proportions:
+        return None
+    try:
+        injection = block.get("injection") or {}
+        return {
+            "resource_type": block.get("resource_type", "Encounter"),
+            "field_name": block.get("field_name", "class_code"),
+            "method": block["detection"].get("method", "jensen_shannon_distance"),
+            "threshold": float(block["detection"]["threshold"]),
+            "min_samples": int(block["detection"]["min_samples"]),
+            "incident_type": block["incident"]["type"],
+            "metric_name": block["incident"]["metric_name"],
+            "baseline": {str(code): float(share) for code, share in proportions.items()},
+            "baseline_encounters": silver.get("encounters"),
+            "baseline_source": (baselines or {}).get("source"),
+            "baseline_built_at": (baselines or {}).get("built_at"),
+            "injection": (
+                f"{injection['source_class']} → {injection['target_class']} "
+                f"({float(injection['fraction']):.0%})"
+                if injection.get("source_class") and injection.get("target_class")
+                else None
+            ),
+        }
+    except KeyError as missing:
+        raise ValueError(
+            f"monitoring.yaml is missing encounter_class_drift key {missing}"
+        ) from None
+
+
+def encounter_class_label(code: str) -> str:
+    return ENCOUNTER_CLASS_LABELS.get(code, code)
+
+
+_ENCOUNTER_OBSERVED_PATTERN = re.compile(r"Observed:\s*(.*?)\.\s*Silver baseline:", re.S)
+_ENCOUNTER_SHARE_PATTERN = re.compile(r"([A-Z]+)\s+([0-9]*\.?[0-9]+)%")
+
+
+def recover_encounter_distribution(
+    message: str | None,
+    observed_jsd: float | None,
+    baseline: dict[str, float],
+) -> RecoveryResult:
+    """
+    Class proportions at detection, read from an Encounter class drift
+    message ("Observed: AMB 69.1%, EMER 30.3%, ...").
+
+    Same rule as the smoking check: only returned when the JSD recomputed
+    from them against the Silver baseline matches the stored JSD.
+    """
+
+    if not message:
+        return RecoveryResult(None, "Incident has no message context.")
+    if observed_jsd is None:
+        return RecoveryResult(None, "Incident has no stored JSD to verify against.")
+
+    match = _ENCOUNTER_OBSERVED_PATTERN.search(message)
+    shares = (
+        {code: float(value) for code, value in _ENCOUNTER_SHARE_PATTERN.findall(match.group(1))}
+        if match
+        else {}
+    )
+    if len(shares) < 2 or sum(shares.values()) <= 0:
+        return RecoveryResult(
+            None, "The incident message does not contain the observed class shares."
+        )
+
+    total = sum(shares.values())
+    parsed = {code: shares.get(code, 0.0) / total for code in set(baseline) | set(shares)}
+
+    recomputed = jensen_shannon_distance(baseline, parsed)
+    if abs(recomputed - observed_jsd) > JSD_VERIFY_TOLERANCE:
+        return RecoveryResult(
+            None,
+            f"Shares found in the message give JSD {recomputed:.4f}, which "
+            f"does not match the stored {observed_jsd:.4f}, so they are not shown.",
+        )
+    return RecoveryResult(RecoveredDistribution(parsed, recomputed, observed_jsd), "")
 
 
 def category_display(code: str, settings: dict[str, Any]) -> str:
@@ -471,6 +675,11 @@ class IncidentContext(NamedTuple):
     reference_label: str  # "threshold" / "baseline"
     comparator: str  # ">", "<", "="
     tone: str  # tone of the observed value
+    # Optional display overrides. When empty, the card formats the numbers.
+    observed_label: str = "observed"
+    observed_text: str | None = None  # e.g. "3" instead of "3.0000"
+    reference_text: str | None = None
+    note: str | None = None  # one line under the numbers
 
 
 def incident_context(incident: dict, settings: dict[str, Any] | None) -> IncidentContext:
@@ -485,13 +694,17 @@ def incident_context(incident: dict, settings: dict[str, Any] | None) -> Inciden
         settings is not None
         and incident.get("incident_type") == settings["incident_type"]
         and incident.get("metric_name") == settings["metric_name"]
+        # The categorical_drift settings describe the Observation (smoking)
+        # check. Encounter class drift uses the same incident type and metric,
+        # so it is told apart by its resource.
+        and (incident.get("resource_type") or "Observation") == "Observation"
     )
     if matches_categorical:
         reference = settings["threshold"]
         title = settings["observation_display"]
         subtitle = f"FHIR {incident.get('resource_type') or 'Observation'} · {settings['observation_code']}"
         reference_label = "threshold"
-        tone = THRESHOLD_STATE_TONE[threshold_state(observed, reference)]
+        tone = severity_tone(incident.get("severity"))
     else:
         reference = incident.get("baseline_value")
         field = incident.get("field_name")

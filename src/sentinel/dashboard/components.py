@@ -96,7 +96,7 @@ def render_top_bar(
     """
 
     brand, nav, theme, status, button = st.columns(
-        [2.3, 4.7, 1.5, 2.1, 0.9],
+        [2.3, 4.7, 0.6, 2.1, 1.3],
         vertical_alignment="center",
     )
     with brand:
@@ -136,17 +136,19 @@ def render_top_bar(
             else "dark"
         )
 
+        # Monochrome line icons (Material Symbols) instead of colored emoji.
+        # They take the text color, so they fit both themes.
         icon = (
-            "☀️"
+            ":material/light_mode:"
             if current_theme == "dark"
-            else "🌙"
+            else ":material/dark_mode:"
         )
 
         if st.button(
             icon,
             key="theme_toggle",
             help=f"Switch to {next_theme} mode",
-            width="stretch",
+            width="content",
         ):
             st.session_state[theme_key] = next_theme
             st.rerun()
@@ -219,15 +221,15 @@ def render_db_error(error: Exception) -> None:
 def overall_health_card(
     health: HealthState,
     open_count: int,
-    monitored: int,
-    total_resources: int,
     last_detection: datetime | None,
     score: float | None = None,
+    title: str = "Overall Data Health",
 ) -> None:
     """
     Overall data health. Shows a state (Healthy / Attention / Critical).
     ``score`` is reserved for a future, real scoring formula; when None no
-    number is shown.
+    number is shown. ``title`` changes when the Overview is scoped to one
+    FHIR resource.
     """
 
     center = (
@@ -239,7 +241,7 @@ def overall_health_card(
         f"""
         <div class="sn-card sn-card-tall">
           <div class="sn-card-head">
-            <span class="sn-eyebrow">Overall Data Health</span>
+            <span class="sn-eyebrow">{esc(title)}</span>
             <span class="sn-tech">from open incidents</span>
           </div>
           <div class="sn-health">
@@ -250,8 +252,6 @@ def overall_health_card(
             <div class="sn-health-detail">{esc(health.detail)}</div>
           </div>
           <div class="sn-stats">
-            <div class="sn-stat"><span>Open incidents</span><b>{open_count}</b></div>
-            <div class="sn-stat"><span>Resources monitored</span><b>{monitored} / {total_resources}</b></div>
             <div class="sn-stat"><span>Latest detection</span><b>{esc(relative_time(last_detection))}</b></div>
           </div>
         </div>
@@ -259,41 +259,194 @@ def overall_health_card(
     )
 
 
-def resources_card(rows: list[dict]) -> None:
+# Same height for the three Overview cards so they line up side by side.
+OVERVIEW_CARD_HEIGHT = 410
+
+
+def resources_card(
+    rows: list[dict],
+    selected: str | None = None,
+    on_select=None,
+) -> None:
     """
     rows: name, detail, label, tone, active (bool).
+
+    Each row is clickable when ``on_select`` is given: an invisible
+    Streamlit button covers the row and calls ``on_select(name)``.
     """
 
-    items = []
-    for row in rows:
-        off = "" if row["active"] else " sn-off"
-        items.append(
-            f"""
-            <div class="sn-res{off}">
-              <div>
-                <div class="sn-res-name">{esc(row['name'])}</div>
-                <div class="sn-res-sub">{esc(row['detail'])}</div>
-              </div>
-              {chip(row['label'], row['tone'], dot=row['active'])}
-            </div>
-            """
-        )
+    # The whole row is the click target: each row's Streamlit button is
+    # stretched over the row and made invisible.
     html(
         f"""
-        <div class="sn-card sn-card-tall">
-          <div class="sn-card-head"><span class="sn-eyebrow">FHIR Resources</span>
-          <span class="sn-tech">{sum(r['active'] for r in rows)} monitored</span></div>
-          {''.join(items)}
-          <div class="sn-tech" style="margin-top:auto">A resource is monitored only when a detector is configured for it.</div>
-        </div>
+        <div class="sn-css-holder"></div>
+        <style>
+        [data-testid="stElementContainer"]:has(.sn-css-holder) {{ display:none !important; }}
+        .sn-card-tall {{ min-height:{OVERVIEW_CARD_HEIGHT}px !important; }}
+        .st-key-panel-resources {{
+            min-height:{OVERVIEW_CARD_HEIGHT}px;
+            padding:20px 22px 6px 22px !important;
+            gap:0 !important;
+        }}
+        .st-key-panel-resources [data-testid="stVerticalBlock"] {{ gap:0 !important; }}
+        .st-key-panel-resources .sn-card-head {{ margin-bottom:18px; }}
+        div[class*="st-key-rescard-"] {{
+            position:relative !important;
+            margin-bottom:14px !important;
+        }}
+        div[class*="st-key-rescard-"] [data-testid="stElementContainer"],
+        div[class*="st-key-rescard-"] [data-testid="stMarkdown"],
+        div[class*="st-key-rescard-"] .stMarkdown,
+        div[class*="st-key-rescard-"] [data-testid="stMarkdownContainer"] {{
+            margin:0 !important;
+        }}
+        div[class*="st-key-rescard-"] .sn-res {{
+            margin:0 !important;
+            padding:16px 18px;
+            gap:16px;
+            transition:border-color 0.15s ease, box-shadow 0.15s ease;
+        }}
+        div[class*="st-key-rescard-"]:hover .sn-res {{ border-color:{COLORS['cyan']}; }}
+        .sn-res.sn-res-selected {{
+            border-color:{COLORS['cyan']};
+            box-shadow:0 0 0 1px {COLORS['cyan']};
+            opacity:1;
+        }}
+        div[class*="st-key-respick-"] {{
+            position:absolute !important;
+            inset:0 !important;
+            width:100% !important;
+            height:100% !important;
+            margin:0 !important;
+            z-index:5;
+        }}
+        div[class*="st-key-respick-"] * {{
+            width:100% !important;
+            height:100% !important;
+        }}
+        div[class*="st-key-respick-"] button {{
+            opacity:0 !important;
+            cursor:pointer !important;
+            min-height:0 !important;
+            padding:0 !important;
+            border:none !important;
+        }}
+        </style>
         """
     )
+
+    with st.container(key="panel-resources"):
+        html('<div class="sn-card-head"><span class="sn-eyebrow">FHIR Resources</span></div>')
+
+        for row in rows:
+            off = "" if row["active"] else " sn-off"
+            chosen = " sn-res-selected" if row["name"] == selected else ""
+
+            with st.container(key=f"rescard-{row['name']}"):
+                html(
+                    f"""
+                    <div class="sn-res{off}{chosen}">
+                      <div>
+                        <div class="sn-res-name">{esc(row['name'])}</div>
+                        <div class="sn-res-sub">{esc(row['detail'])}</div>
+                      </div>
+                      {chip(row['label'], row['tone'], dot=row['active'])}
+                    </div>
+                    """
+                )
+
+                if on_select is not None:
+                    st.button(
+                        f"Show {row['name']}",
+                        key=f"respick-{row['name']}",
+                        on_click=on_select,
+                        args=(row["name"],),
+                    )
+
+
+def detector_cards(
+    cards: list[dict],
+    selected: str | None,
+    on_select,
+    key_prefix: str,
+) -> None:
+    """
+    One clickable status card per detector, side by side.
+
+    cards: key, name, label, tone, detail. Clicking a card calls
+    ``on_select(card_key)``; the selected card gets a cyan outline.
+    """
+
+    html(
+        f"""
+        <div class="sn-css-holder"></div>
+        <style>
+        [data-testid="stElementContainer"]:has(.sn-css-holder) {{ display:none !important; }}
+        div[class*="st-key-detcard-"] {{ position:relative !important; }}
+        div[class*="st-key-detcard-"] [data-testid="stElementContainer"],
+        div[class*="st-key-detcard-"] [data-testid="stMarkdown"],
+        div[class*="st-key-detcard-"] .stMarkdown,
+        div[class*="st-key-detcard-"] [data-testid="stMarkdownContainer"] {{
+            margin:0 !important;
+        }}
+        div[class*="st-key-detcard-"] .sn-det {{
+            min-height:118px;
+            transition:border-color 0.15s ease, box-shadow 0.15s ease;
+        }}
+        div[class*="st-key-detcard-"]:hover .sn-det {{ border-color:{COLORS['cyan']}; }}
+        .sn-det.sn-detcard-selected {{
+            border-color:{COLORS['cyan']};
+            box-shadow:0 0 0 1px {COLORS['cyan']};
+        }}
+        div[class*="st-key-detpick-"] {{
+            position:absolute !important;
+            inset:0 !important;
+            width:100% !important;
+            height:100% !important;
+            margin:0 !important;
+            z-index:5;
+        }}
+        div[class*="st-key-detpick-"] * {{
+            width:100% !important;
+            height:100% !important;
+        }}
+        div[class*="st-key-detpick-"] button {{
+            opacity:0 !important;
+            cursor:pointer !important;
+            min-height:0 !important;
+            padding:0 !important;
+            border:none !important;
+        }}
+        </style>
+        """
+    )
+
+    columns = st.columns(len(cards), gap="small")
+    for column, card in zip(columns, cards):
+        chosen = " sn-detcard-selected" if card["key"] == selected else ""
+        with column, st.container(key=f"detcard-{key_prefix}-{card['key']}"):
+            html(
+                f"""
+                <div class="sn-det{chosen}">
+                  {chip(card['label'], card['tone'], dot=True)}
+                  <div class="sn-det-name">{esc(card['name'])}</div>
+                  <div class="sn-det-line">{esc(card['detail'])}</div>
+                </div>
+                """
+            )
+            st.button(
+                f"Show {card['name']}",
+                key=f"detpick-{key_prefix}-{card['key']}",
+                on_click=on_select,
+                args=(card["key"],),
+            )
 
 
 def active_incident_card(
     incident: dict | None,
     context: IncidentContext | None,
     is_open: bool,
+    empty_detail: str = "Sentinel has not written any incident to PostgreSQL yet.",
 ) -> None:
     if incident is None or context is None:
         html(
@@ -303,7 +456,7 @@ def active_incident_card(
               {chip('None', 'green', dot=True)}</div>
               <div class="sn-empty-ok">
                 <div class="sn-big sn-text-green">No data-health incidents detected</div>
-                <div>Sentinel has not written any incident to PostgreSQL yet.</div>
+                <div>{esc(empty_detail)}</div>
               </div>
             </div>
             """
@@ -312,12 +465,18 @@ def active_incident_card(
 
     eyebrow = "Active Incident" if is_open else "Most Recent Incident"
     accent = context.tone if is_open else "muted"
+    # A resolved incident is history: its value is grey, not alarming red.
+    value_tone = context.tone if is_open else "muted"
+
+    observed_text = context.observed_text or format_value(context.observed)
+    reference_text = context.reference_text or format_value(context.reference)
+
     reference_html = ""
-    if context.reference is not None:
+    if context.reference is not None or context.reference_text:
         reference_html = f"""
           <div class="sn-compare-op">{esc(context.comparator)}</div>
           <div>
-            <div class="sn-compare-val" style="color:{COLORS['muted']}">{format_value(context.reference)}</div>
+            <div class="sn-compare-val" style="color:{COLORS['muted']}">{esc(reference_text)}</div>
             <div class="sn-compare-lab">{esc(context.reference_label)}</div>
           </div>
         """
@@ -326,6 +485,11 @@ def active_incident_card(
         start = to_display_tz(incident["window_start"]).strftime("%H:%M:%S")
         end = to_display_tz(incident["window_end"]).strftime("%H:%M:%S")
         window = f'<div class="sn-stat"><span>Processing window</span><b>{esc(start)} – {esc(end)}</b></div>'
+    note_html = (
+        f'<div class="sn-tech">{"<br>".join(esc(line) for line in context.note.splitlines())}</div>'
+        if context.note
+        else ""
+    )
     resolved_note = "" if is_open else '<div class="sn-tech">No open incidents — showing the latest one for context.</div>'
 
     html(
@@ -335,14 +499,14 @@ def active_incident_card(
           <span class="sn-tech">#{esc(incident['id'])}</span></div>
           <div class="sn-inc-type sn-text-{context.tone}">{esc(humanize(incident['incident_type']))}</div>
           <div class="sn-inc-title">{esc(context.title)}</div>
-          <div class="sn-inc-sub">{esc(context.subtitle)} · {esc(context.metric_label)}</div>
           <div class="sn-compare">
             <div>
-              <div class="sn-compare-val sn-text-{context.tone}">{format_value(context.observed)}</div>
-              <div class="sn-compare-lab">observed</div>
+              <div class="sn-compare-val sn-text-{value_tone}">{esc(observed_text)}</div>
+              <div class="sn-compare-lab">{esc(context.observed_label)}</div>
             </div>
             {reference_html}
           </div>
+          {note_html}
           {resolved_note}
           <div class="sn-stats">
             <div class="sn-stat"><span>Detected</span><b>{esc(format_timestamp(incident['detected_at']))}</b></div>
@@ -690,15 +854,76 @@ def incident_detail(incident: dict, context: IncidentContext, extra_rows: list[t
     )
 
 
+def incident_compact_table(rows: list[dict], value_label: str = "Value") -> None:
+    """
+    Short incident table for a page about ONE detector: the columns that are
+    the same on every row (type, resource, field, metric) are left out.
+
+    rows (newest first): id, detected_at, value (text), duration (text),
+    severity, status.
+    """
+
+    if not rows:
+        return
+
+    tz = tz_label(to_display_tz(rows[0]["detected_at"]))
+    body = []
+    for row in rows:
+        severity = row.get("severity") or "unknown"
+        status = row.get("status") or "open"
+        detected = to_display_tz(row["detected_at"]).strftime("%Y-%m-%d %H:%M")
+        body.append(
+            f"""
+            <tr>
+                <td>#{esc(row["id"])}</td>
+                <td>{esc(detected)}</td>
+                <td class="sn-mono">{esc(row["value"])}</td>
+                <td>{esc(row["duration"])}</td>
+                <td><span class="sn-text-{severity_tone(severity)}">{esc(severity.upper())}</span></td>
+                <td><span class="sn-text-{status_tone(status)}">{esc(status.title())}</span></td>
+            </tr>
+            """
+        )
+
+    html(
+        f"""
+        <div class="sn-table-wrap" style="max-width:100%; overflow-x:auto; box-sizing:border-box; margin-bottom:18px;">
+        <table class="sn-table" style="width:100%; min-width:0; table-layout:auto;">
+            <thead>
+                <tr>
+                    <th>Incident</th>
+                    <th>Detected ({esc(tz)})</th>
+                    <th>{esc(value_label)}</th>
+                    <th>Duration</th>
+                    <th>Severity</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>{''.join(body)}</tbody>
+        </table>
+        </div>
+        """
+    )
+
+
 def ordered_options(values: set[str], order: tuple[str, ...]) -> list[str]:
     known = [v for v in order if v in values]
     return known + sorted(v for v in values if v not in order)
 
+
 def incident_static_table(
     incidents: list[dict],
+    field_label=None,
 ) -> None:
     """
     Render incidents using Sentinel's own theme-aware HTML table.
+
+    field_label: optional function turning a stored field_name into a
+    readable label (e.g. "Heart rate (8867-4)"). Without it the raw
+    field_name is shown.
+
+    Contract violation counts are whole numbers of bad rows, so they are
+    shown without decimals.
     """
 
     if not incidents:
@@ -719,11 +944,20 @@ def incident_static_table(
             "%Y-%m-%d %H:%M:%S"
         )
 
-        observed = (
-            f"{incident['observed_value']:.4f}"
-            if incident.get("observed_value")
-            is not None
-            else "—"
+        value = incident.get("observed_value")
+
+        if value is None:
+            observed = "—"
+        elif incident.get("metric_name") == "contract_violation_count":
+            observed = f"{int(value):,}"
+        else:
+            observed = f"{value:.4f}"
+
+        field_name = incident.get("field_name")
+        field = (
+            field_label(field_name)
+            if field_label is not None
+            else (field_name or "—")
         )
 
         severity = (
@@ -743,6 +977,7 @@ def incident_static_table(
                 <td>{esc(detected)}</td>
                 <td>{esc(humanize(incident["incident_type"]))}</td>
                 <td>{esc(incident.get("resource_type") or "—")}</td>
+                <td>{esc(field)}</td>
                 <td>{esc(humanize(incident.get("metric_name")))}</td>
                 <td class="sn-mono">{esc(observed)}</td>
                 <td>
@@ -761,14 +996,15 @@ def incident_static_table(
 
     html(
         f"""
-        <div class="sn-table-wrap">
-            <table class="sn-table">
+            <div class="sn-table-wrap" style="max-width:100%; overflow-x:auto; box-sizing:border-box; margin-bottom:18px;">
+            <table class="sn-table" style="width:100%; min-width:0; table-layout:auto;">
                 <thead>
                     <tr>
                         <th>ID</th>
                         <th>Detected At ({esc(tz)})</th>
                         <th>Incident Type</th>
                         <th>Resource</th>
+                        <th>Field</th>
                         <th>Metric</th>
                         <th>Observed Value</th>
                         <th>Severity</th>

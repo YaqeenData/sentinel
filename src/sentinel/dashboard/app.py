@@ -165,13 +165,10 @@ PAGES = {
         "overview",
         views.render_overview,
     ),
+    # Contract checks are part of Data Quality, per FHIR resource.
     "Data Quality": (
         "data-quality",
         views.render_data_quality,
-    ),
-    "Schema & Contracts": (
-        "schema",
-        views.render_schema,
     ),
     "Incidents": (
         "incidents",
@@ -343,7 +340,6 @@ def render_live_dashboard(
     # Browser tab:
     # Sentinel · Overview
     # Sentinel · Data Quality
-    # Sentinel · Schema & Contracts
     # Sentinel · Incidents
     st.set_page_config(
         page_title=f"Sentinel · {current_page}",
