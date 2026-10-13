@@ -155,7 +155,7 @@ def check(rows: list[dict], window: dict, baseline: dict | None = None) -> list[
 
     return results
 
-# Handoff to storage (save_incident in sentinel.storage.posgres)
+# Handoff to storage (save_incident in sentinel.storage.postgres)
 
 STORAGE_INCIDENT_TYPE = "contract_violation"
 

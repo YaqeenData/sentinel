@@ -2,7 +2,7 @@
 
 from sentinel.streaming.profile import build_window_profile
 from sentinel.streaming.windows import Window, floor_to_window
-from sentinel.storage.posgres import save_quality_window
+from sentinel.storage.postgres import save_quality_window
 
 
 class WindowManager:
