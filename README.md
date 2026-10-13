@@ -41,14 +41,6 @@ Sentinel explores one question:
 
 Sentinel separates data generation, streaming, monitoring, persistence, and observability into distinct stages.
 
-<p align="center">
-  <img
-    src="assets/architecture/sentinel-architecture.svg"
-    alt="Sentinel system architecture"
-    width="100%"
-  />
-</p>
-
 ### Architecture Flow
 
 The live monitoring path follows:
