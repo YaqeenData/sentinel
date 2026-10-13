@@ -39,32 +39,44 @@ Sentinel explores one question:
 
 ## Architecture
 
-Sentinel separates data generation, streaming, monitoring, persistence, and observability into distinct stages.
+Sentinel separates the live streaming path from the historical reference path, bringing both together in the detection engine to evaluate the health of incoming data.
+
+<p align="center">
+  <img
+    src="assets/architecture/sentinel-architecture-16x9.dark.png"
+    alt="Sentinel system architecture showing the live FHIR streaming pipeline and historical baseline path"
+    width="100%"
+  />
+</p>
 
 ### Architecture Flow
 
-The live monitoring path follows:
+**Live monitoring**
 
-**Synthea → HAPI FHIR → Python Producer → Apache Kafka → 60-Second Windows → Sentinel Detection Engine → PostgreSQL → Streamlit**
+`Synthea → HAPI FHIR → Python Producer → Apache Kafka → 60-Second Windows → Sentinel Detection Engine → PostgreSQL → Streamlit`
 
-A separate reference path uses historical data stored in **Google Cloud** to build healthy baselines that feed the Sentinel Detection Engine.
+**Reference / baseline**
+
+`Google Cloud → Baseline Profiling → Sentinel Detection Engine`
+
+The live stream is evaluated in 60-second processing windows while historical healthy data provides the reference behavior used by Sentinel's drift and quality detectors.
 
 ### What Each Component Does
 
 | Component | Role |
 | --- | --- |
-| **Synthea** | Generates realistic but fully synthetic healthcare data so Sentinel can be tested without real patient records. |
+| **Synthea** | Generates realistic but fully synthetic healthcare data for testing and replay. |
 | **HAPI FHIR** | Hosts FHIR resources such as `Patient`, `Encounter`, and `Observation`. |
-| **Python Producer** | Reads FHIR records and publishes them as streaming events. |
-| **Apache Kafka** | Carries the live data stream between the producer and monitoring layer. |
-| **60-Second Windows** | Groups incoming records into fixed processing windows for profiling and comparison. |
-| **Google Cloud** | Provides cloud storage for historical, raw, and processed datasets used by Sentinel. |
-| **Baseline Profiling** | Learns expected healthy behavior from historical data. |
-| **Sentinel Detection Engine** | Runs contract validation, missingness, numeric drift, categorical drift, and volume checks. |
-| **PostgreSQL** | Persists quality metrics, incidents, statuses, and related monitoring data. |
-| **Streamlit** | Provides the internal observability dashboard for data-engineering teams. |
+| **Python Producer** | Reads FHIR resources and publishes them as streaming events. |
+| **Apache Kafka** | Provides the streaming backbone between data production and real-time monitoring. |
+| **60-Second Windows** | Groups live events into fixed processing windows for profiling and detection. |
+| **Google Cloud** | Stores historical, raw, and processed datasets used by the reference pipeline. |
+| **Baseline Profiling** | Builds the expected healthy behavior used for comparison with live data. |
+| **Sentinel Detection Engine** | Runs contract validation, missingness, numeric drift, categorical drift, and volume monitoring. |
+| **PostgreSQL** | Persists quality metrics, incidents, statuses, and monitoring history. |
+| **Streamlit** | Provides the internal data-observability dashboard for engineering teams. |
 
-> Sentinel monitors **data health, not patient health**.
+> **Sentinel monitors data health, not patient health.**
 
 ---
 
