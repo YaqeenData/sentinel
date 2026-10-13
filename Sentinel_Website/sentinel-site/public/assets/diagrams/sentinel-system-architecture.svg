@@ -1,0 +1,83 @@
+<svg class="sn" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 396" role="img" aria-labelledby="t d" fill="none">
+<title id="t">Sentinel system architecture</title>
+<desc id="d">Two paths. A reference path turns Synthea FHIR data into Bronze, then Silver, then fixed healthy baselines. A live path replays FHIR data through a producer into the Kafka fhir-observations topic, a consumer with 60-second windows, the Sentinel detection engine, PostgreSQL, and a read-only Streamlit dashboard. The baselines feed the detection engine.</desc>
+<style>svg.sn{--sn-surface:var(--surface,#101d2e);--sn-soft:var(--bg-soft,#0b1727);--sn-line:var(--line,#263a52);--sn-strong:var(--line-strong,#1c6b80);--sn-text:var(--text,#f1f5f9);--sn-muted:var(--muted,#94a3b8);--sn-cyan:var(--cyan,#22d3ee);--sn-blue:var(--blue,#3b82f6);--sn-tint:color-mix(in srgb, var(--cyan,#22d3ee) 9%, var(--surface,#101d2e));font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+.sn .node{fill:var(--sn-surface);stroke:var(--sn-line);stroke-width:1}
+.sn .core{fill:var(--sn-tint);stroke:var(--sn-cyan);stroke-width:1.4}
+.sn .accent{fill:var(--sn-surface);stroke:var(--sn-strong);stroke-width:1.2}
+.sn .t{fill:var(--sn-text);font-weight:600;font-size:14px}
+.sn .s{fill:var(--sn-muted);font-family:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;font-size:10px}
+.sn .tag{font-family:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;font-size:8.5px;letter-spacing:.12em;font-weight:500}
+.sn .lane{font-family:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;font-size:10.5px;letter-spacing:.12em;font-weight:500}
+.sn .c{fill:var(--sn-cyan)} .sn .b{fill:var(--sn-blue)} .sn .m{fill:var(--sn-muted)}
+.sn .arrow{fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.sn .a-live{stroke:var(--sn-cyan)} .sn .a-ref{stroke:var(--sn-blue)} .sn .a-mut{stroke:var(--sn-muted)}
+.sn .head-live{fill:var(--sn-cyan)} .sn .head-ref{fill:var(--sn-blue)}
+</style>
+<defs><marker id="hl" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1.5 L8.5 5 L1 8.5" fill="none" stroke="var(--sn-cyan)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker><marker id="hr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1.5 L8.5 5 L1 8.5" fill="none" stroke="var(--sn-blue)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text class="lane b" x="42" y="40">REFERENCE PATH · DEFINES HEALTHY</text>
+<text class="lane c" x="42" y="250">LIVE PATH · TESTS WHETHER IT STILL HOLDS</text>
+<rect class="node" x="42" y="58" width="146" height="84" rx="10"/>
+<text class="tag b" x="56" y="77">GENERATE</text>
+<text class="t" x="56" y="100">Synthea</text>
+<text class="s" x="56" y="117">synthetic FHIR</text>
+<text class="s" x="56" y="130">3 resource types</text>
+<path class="arrow a-ref" d="M194 100.0 H228" marker-end="url(#hr)"/>
+<rect class="node" x="236" y="58" width="146" height="84" rx="10"/>
+<text class="tag b" x="250" y="77">REFINE</text>
+<text class="t" x="250" y="100">Bronze</text>
+<text class="s" x="250" y="117">raw FHIR</text>
+<text class="s" x="250" y="130">NDJSON</text>
+<path class="arrow a-ref" d="M388 100.0 H422" marker-end="url(#hr)"/>
+<rect class="node" x="430" y="58" width="146" height="84" rx="10"/>
+<text class="tag b" x="444" y="77">REFINE</text>
+<text class="t" x="444" y="100">Silver</text>
+<text class="s" x="444" y="117">typed tables</text>
+<text class="s" x="444" y="130">stored in GCS</text>
+<path class="arrow a-ref" d="M582 100.0 H616" marker-end="url(#hr)"/>
+<rect class="accent" x="624" y="58" width="146" height="84" rx="10"/>
+<text class="tag b" x="638" y="77">REFERENCE</text>
+<text class="t" x="638" y="100">Baselines</text>
+<text class="s" x="638" y="117">healthy reference</text>
+<text class="s" x="638" y="130">fixed, from Silver</text>
+<rect class="node" x="42" y="268" width="146" height="84" rx="10"/>
+<text class="tag c" x="56" y="287">INGEST</text>
+<text class="t" x="56" y="310">Replay producer</text>
+<text class="s" x="56" y="327">Python replay</text>
+<text class="s" x="56" y="340">failure injection</text>
+<path class="arrow a-live" d="M194 310.0 H228" marker-end="url(#hl)"/>
+<rect class="accent" x="236" y="268" width="146" height="84" rx="10"/>
+<text class="tag c" x="250" y="287">STREAM</text>
+<text class="t" x="250" y="310">Kafka</text>
+<text class="s" x="250" y="327">fhir-observations</text>
+<text class="s" x="250" y="340">topic</text>
+<path class="arrow a-live" d="M388 310.0 H422" marker-end="url(#hl)"/>
+<rect class="node" x="430" y="268" width="146" height="84" rx="10"/>
+<text class="tag c" x="444" y="287">WINDOW</text>
+<text class="t" x="444" y="310">Consumer</text>
+<text class="s" x="444" y="327">Python consumer</text>
+<text class="s" x="444" y="340">60-second windows</text>
+<path class="arrow a-live" d="M582 310.0 H616" marker-end="url(#hl)"/>
+<rect class="core" x="624" y="268" width="146" height="84" rx="10"/>
+<text class="tag c" x="638" y="287">DETECT</text>
+<text class="t" x="638" y="310">Detection engine</text>
+<text class="s" x="638" y="327">5 detectors</text>
+<text class="s" x="638" y="340">vs baselines</text>
+<path class="arrow a-live" d="M776 310.0 H810" marker-end="url(#hl)"/>
+<rect class="node" x="818" y="268" width="146" height="84" rx="10"/>
+<text class="tag c" x="832" y="287">STORE</text>
+<text class="t" x="832" y="310">PostgreSQL</text>
+<text class="s" x="832" y="327">incidents · metrics</text>
+<text class="s" x="832" y="340">baselines · schema</text>
+<path class="arrow a-live" d="M970 310.0 H1004" marker-end="url(#hl)"/>
+<rect class="node" x="1012" y="268" width="146" height="84" rx="10"/>
+<text class="tag c" x="1026" y="287">OBSERVE</text>
+<text class="t" x="1026" y="310">Dashboard</text>
+<text class="s" x="1026" y="327">Streamlit</text>
+<text class="s" x="1026" y="340">read-only</text>
+<path class="arrow a-ref" d="M697.0 148 V260" marker-end="url(#hr)"/>
+<text class="s m" x="709.0" y="208.0">healthy reference</text>
+<rect class="core" x="848" y="62" width="14" height="10" rx="3"/><text class="s" x="870" y="71">Sentinel detection</text>
+<rect class="accent" x="848" y="86" width="14" height="10" rx="3"/><text class="s" x="870" y="95">Reference / stream</text>
+<rect class="node" x="848" y="110" width="14" height="10" rx="3"/><text class="s" x="870" y="119">Supporting component</text>
+</svg>

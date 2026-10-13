@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { SectionHeading } from '../components/SectionHeading';
 import { PlaceholderVisual } from '../components/PlaceholderVisual';
+const base = import.meta.env.BASE_URL;
 
 function DeepDive({
   title,
@@ -108,19 +109,19 @@ export function CaseStudyPage() {
           <picture>
             <source
               media="(max-width: 720px)"
-              srcSet="/assets/diagrams/sentinel-system-architecture-mobile.svg"
+              srcSet={`${base}assets/diagrams/sentinel-system-architecture-mobile.svg`}
             />
 
             <img
-              src="/assets/diagrams/sentinel-system-architecture.svg"
+              src={`${base}assets/diagrams/sentinel-system-architecture.svg`}
               alt="Sentinel system architecture showing the historical reference path used to establish healthy baselines and the live streaming path through Kafka, the detection engine, PostgreSQL, and the monitoring dashboard."
               loading="lazy"
             />
           </picture>
 
           <figcaption>
-            Sentinel separates baseline generation from live stream evaluation
-            so controlled failures do not redefine healthy behavior.
+            Sentinel separates baseline generation from live stream evaluation so
+            controlled failures do not redefine healthy behavior.
           </figcaption>
         </figure>
 
@@ -197,23 +198,22 @@ export function CaseStudyPage() {
         <figure className="case-diagram detector-diagram">
           <img
             className="diagram-dark"
-            src="/assets/diagrams/sentinel-detection-engine-dark.webp"
-            alt="Sentinel detection engine showing contract validation, missingness, numeric drift, categorical drift, and volume monitoring. Each detector compares the current window with rules or healthy baselines before determining whether the data remains healthy or an incident should be opened."
+            src={`${base}assets/diagrams/sentinel-detection-engine-dark.webp`}
+            alt="Sentinel detection engine showing contract validation, missingness, numeric drift, categorical drift, and volume monitoring."
             loading="lazy"
           />
 
           <img
             className="diagram-light"
-            src="/assets/diagrams/sentinel-detection-engine-light.webp"
+            src={`${base}assets/diagrams/sentinel-detection-engine-light.webp`}
             alt=""
             aria-hidden="true"
             loading="lazy"
           />
 
           <figcaption>
-            Different failure modes are evaluated independently before Sentinel
-            decides whether the window remains healthy or should open an
-            incident.
+            Different failure modes are evaluated independently before Sentinel decides
+            whether the window remains healthy or should open an incident.
           </figcaption>
         </figure>
 
