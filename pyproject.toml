@@ -1,7 +1,7 @@
 [project]
 name = "sentinel"
 version = "0.1.0"
-description = "sentinel environment requirements"
+description = "Real-time data health monitoring and observability for streaming FHIR data"
 authors = [
     {name = "Yaqeen Alhalal",email = "YaqeenAlhalal@outlook.sa"}
 ]
