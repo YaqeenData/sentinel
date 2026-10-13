@@ -1,0 +1,69 @@
+<svg class="sn" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 946" role="img" aria-labelledby="t d" fill="none">
+<title id="t">Sentinel system architecture (stacked)</title>
+<desc id="d">Reference path: Synthea, Bronze, Silver, Baselines. Live path: Replay producer, Kafka fhir-observations, Consumer with 60-second windows, Detection engine (which also uses the baselines), PostgreSQL, Dashboard.</desc>
+<style>svg.sn{--sn-surface:var(--surface,#101d2e);--sn-soft:var(--bg-soft,#0b1727);--sn-line:var(--line,#263a52);--sn-strong:var(--line-strong,#1c6b80);--sn-text:var(--text,#f1f5f9);--sn-muted:var(--muted,#94a3b8);--sn-cyan:var(--cyan,#22d3ee);--sn-blue:var(--blue,#3b82f6);--sn-tint:color-mix(in srgb, var(--cyan,#22d3ee) 9%, var(--surface,#101d2e));font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+.sn .node{fill:var(--sn-surface);stroke:var(--sn-line);stroke-width:1}
+.sn .core{fill:var(--sn-tint);stroke:var(--sn-cyan);stroke-width:1.4}
+.sn .accent{fill:var(--sn-surface);stroke:var(--sn-strong);stroke-width:1.2}
+.sn .t{fill:var(--sn-text);font-weight:600;font-size:14px}
+.sn .s{fill:var(--sn-muted);font-family:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;font-size:10px}
+.sn .tag{font-family:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;font-size:8.5px;letter-spacing:.12em;font-weight:500}
+.sn .lane{font-family:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;font-size:10.5px;letter-spacing:.12em;font-weight:500}
+.sn .c{fill:var(--sn-cyan)} .sn .b{fill:var(--sn-blue)} .sn .m{fill:var(--sn-muted)}
+.sn .arrow{fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.sn .a-live{stroke:var(--sn-cyan)} .sn .a-ref{stroke:var(--sn-blue)} .sn .a-mut{stroke:var(--sn-muted)}
+.sn .head-live{fill:var(--sn-cyan)} .sn .head-ref{fill:var(--sn-blue)}
+</style>
+<defs><marker id="hl" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1.5 L8.5 5 L1 8.5" fill="none" stroke="var(--sn-cyan)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker><marker id="hr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1.5 L8.5 5 L1 8.5" fill="none" stroke="var(--sn-blue)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text class="lane b" x="30" y="26">REFERENCE PATH</text>
+<rect class="node" x="30" y="40" width="300" height="66" rx="10"/>
+<text class="tag b" x="44" y="59">GENERATE</text>
+<text class="t" x="44" y="80">Synthea</text>
+<text class="s" x="44" y="97">synthetic FHIR · 3 resource types</text>
+<path class="arrow a-ref" d="M180.0 110 V122" marker-end="url(#hr)"/>
+<rect class="node" x="30" y="128" width="300" height="66" rx="10"/>
+<text class="tag b" x="44" y="147">REFINE</text>
+<text class="t" x="44" y="168">Bronze</text>
+<text class="s" x="44" y="185">raw FHIR · NDJSON</text>
+<path class="arrow a-ref" d="M180.0 198 V210" marker-end="url(#hr)"/>
+<rect class="node" x="30" y="216" width="300" height="66" rx="10"/>
+<text class="tag b" x="44" y="235">REFINE</text>
+<text class="t" x="44" y="256">Silver</text>
+<text class="s" x="44" y="273">typed tables · stored in GCS</text>
+<path class="arrow a-ref" d="M180.0 286 V298" marker-end="url(#hr)"/>
+<rect class="accent" x="30" y="304" width="300" height="66" rx="10"/>
+<text class="tag b" x="44" y="323">REFERENCE</text>
+<text class="t" x="44" y="344">Baselines</text>
+<text class="s" x="44" y="361">healthy reference · fixed, from Silver</text>
+<text class="lane c" x="30" y="400">LIVE PATH</text>
+<rect class="node" x="30" y="412" width="300" height="66" rx="10"/>
+<text class="tag c" x="44" y="431">INGEST</text>
+<text class="t" x="44" y="452">Replay producer</text>
+<text class="s" x="44" y="469">Python replay · failure injection</text>
+<path class="arrow a-live" d="M180.0 482 V494" marker-end="url(#hl)"/>
+<rect class="accent" x="30" y="500" width="300" height="66" rx="10"/>
+<text class="tag c" x="44" y="519">STREAM</text>
+<text class="t" x="44" y="540">Kafka</text>
+<text class="s" x="44" y="557">fhir-observations · topic</text>
+<path class="arrow a-live" d="M180.0 570 V582" marker-end="url(#hl)"/>
+<rect class="node" x="30" y="588" width="300" height="66" rx="10"/>
+<text class="tag c" x="44" y="607">WINDOW</text>
+<text class="t" x="44" y="628">Consumer</text>
+<text class="s" x="44" y="645">Python consumer · 60-second windows</text>
+<path class="arrow a-live" d="M180.0 658 V670" marker-end="url(#hl)"/>
+<rect class="core" x="30" y="676" width="300" height="66" rx="10"/>
+<text class="tag c" x="44" y="695">DETECT</text>
+<text class="t" x="44" y="716">Detection engine</text>
+<text class="s" x="44" y="733">5 detectors · vs baselines</text>
+<text class="tag b" x="316" y="695" text-anchor="end">+ BASELINES</text>
+<path class="arrow a-live" d="M180.0 746 V758" marker-end="url(#hl)"/>
+<rect class="node" x="30" y="764" width="300" height="66" rx="10"/>
+<text class="tag c" x="44" y="783">STORE</text>
+<text class="t" x="44" y="804">PostgreSQL</text>
+<text class="s" x="44" y="821">incidents · metrics · baselines · schema</text>
+<path class="arrow a-live" d="M180.0 834 V846" marker-end="url(#hl)"/>
+<rect class="node" x="30" y="852" width="300" height="66" rx="10"/>
+<text class="tag c" x="44" y="871">OBSERVE</text>
+<text class="t" x="44" y="892">Dashboard</text>
+<text class="s" x="44" y="909">Streamlit · read-only</text>
+</svg>
