@@ -4,12 +4,17 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'Sentinel_Website/sentinel-site/**'
+      - '.github/workflows/sentinel-site-pages.yml'
+
   pull_request:
     branches:
       - main
     paths:
       - 'Sentinel_Website/sentinel-site/**'
       - '.github/workflows/sentinel-site-pages.yml'
+
   workflow_dispatch:
 
 permissions:
@@ -24,6 +29,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,29 +38,36 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+          cache-dependency-path: Sentinel_Website/sentinel-site/package-lock.json
 
       - name: Install dependencies
         working-directory: Sentinel_Website/sentinel-site
-        run: npm install
+        run: npm ci
 
       - name: Build website
         working-directory: Sentinel_Website/sentinel-site
         run: npm run build
 
       - name: Configure Pages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/configure-pages@v5
 
       - name: Upload Pages artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v3
         with:
           path: Sentinel_Website/sentinel-site/dist
 
   deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     runs-on: ubuntu-latest
     needs: build
+
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
