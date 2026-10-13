@@ -1,7 +1,6 @@
 export type TeamMember = {
   name: string;
   role: string;
-  focus: string;
   linkedin?: string;
   portfolio?: string;
 };
@@ -62,8 +61,8 @@ export const resources = [
 ];
 
 export const team: TeamMember[] = [
-  {name: '[TEAM MEMBER 1]', role: 'Data Engineer', focus: '[Contribution / focus]'},
-  {name: '[TEAM MEMBER 2]', role: 'Data Engineer', focus: '[Contribution / focus]'},
-  {name: '[TEAM MEMBER 3]', role: 'Data Engineer', focus: '[Contribution / focus]'},
-  {name: '[TEAM MEMBER 4]', role: 'Data Engineer', focus: '[Contribution / focus]'},
+  {name: 'Yaqeen Alhalal', role: 'Team Lead & Data Engineer', linkedin: 'https://www.linkedin.com/in/yaqeen-alhalal-8388541a3/', portfolio: 'https://www.yaqeenalhalal.dev'},
+  {name: 'Sama Alharbi', role: 'Data Engineer', linkedin: 'https://www.linkedin.com/in/sama-a-831753201/', portfolio: 'https://samaalharbi2.github.io/'},
+  {name: 'Sarah Masshi', role: 'Data Engineer', linkedin: 'https://www.linkedin.com/in/sarah-maashi-5baa26282?utm_source=share_via&utm_content=profile&utm_medium=member_ios',},
+  {name: 'Rutanah Maghrabi', role: 'Data Engineer', linkedin: 'https://www.linkedin.com/in/rutanah-maghrabi-22b3201b2'},
 ];

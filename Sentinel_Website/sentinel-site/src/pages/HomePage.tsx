@@ -13,7 +13,7 @@ import {
 import {Link} from 'react-router-dom';
 import {CountUp} from '../components/CountUp';
 import {Reveal} from '../components/Reveal';
-import {detectors, resources, siteConfig} from '../data/site';
+import {detectors, resources, siteConfig, team} from '../data/site';
 
 const detectorIcons = [ShieldCheck, HeartPulse, Waves, GitBranch, Database];
 
@@ -319,11 +319,15 @@ export function HomePage() {
           <Reveal>
             <div className="story-kicker">09 · Built together</div>
             <h2>Four data engineers. One question worth investigating.</h2>
-            <p className="story-lead">Final names, contributions, LinkedIn profiles, and portfolios can be added when the team details are ready.</p>
+            <p className="story-lead">Exploring what it takes to make streaming data trustworthy.</p>
             <Link className="case-study-link" to="/team">Meet the team <ArrowRight size={19} /></Link>
           </Reveal>
           <Reveal className="team-preview-grid" delay={120}>
-            {[1, 2, 3, 4].map((member) => <span key={member}>0{member}</span>)}
+            {team.map((member) => (
+              <span key={member.name} >
+                {member.name}
+              </span>
+            ))}
           </Reveal>
         </div>
       </section>

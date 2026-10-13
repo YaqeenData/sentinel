@@ -782,7 +782,7 @@ body {
 .story-team-preview { padding-bottom:160px; }
 .team-preview-layout { display:grid;grid-template-columns:1fr .65fr;gap:80px;align-items:end; }
 .team-preview-grid { display:grid;grid-template-columns:repeat(2,1fr);gap:12px; }
-.team-preview-grid span { display:grid;place-items:center;aspect-ratio:1;border:1px solid var(--line);border-radius:50%;color:var(--muted);font:500 .8rem "IBM Plex Mono",monospace;transition:transform .25s ease,border-color .25s ease,color .25s ease; }
+.team-preview-grid span { display:grid;place-items:center;aspect-ratio:1;border:1px solid var(--line);border-radius:50%;color:var(--muted);font:500 .89rem "IBM Plex Mono",monospace;transition:transform .25s ease,border-color .25s ease,color .25s ease; }
 .team-preview-grid span:hover { transform:translateY(-6px);border-color:var(--cyan);color:var(--cyan); }
 
 @media (max-width: 980px) {
