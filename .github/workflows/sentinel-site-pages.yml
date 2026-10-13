@@ -2,7 +2,11 @@ name: Deploy Sentinel website to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
     paths:
       - 'Sentinel_Website/sentinel-site/**'
       - '.github/workflows/sentinel-site-pages.yml'
