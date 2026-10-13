@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS resources (
 
 -- v1 starts with Observation. Add Encounter / Patient here later.
 INSERT INTO resources (resource_type)
-VALUES ('Observation')
+VALUES ('Observation'), ('Patient')
 ON CONFLICT (resource_type) DO NOTHING;
 
 
@@ -94,7 +94,12 @@ CREATE TABLE IF NOT EXISTS incidents (
 
     CONSTRAINT chk_incidents_type
         CHECK (incident_type IN (
-            'null_spike', 'type_change', 'volume_drop', 'schema_change',
+            -- missingness / volume
+            'null_spike', 'volume_drop', 'volume_spike',
+            -- schema and contract
+            'type_change', 'schema_change',
+            'missing_required_field', 'invalid_value', 'type_mismatch',
+            -- distribution drift
             'numeric_drift', 'categorical_drift'
         )),
     CONSTRAINT chk_incidents_severity
@@ -105,3 +110,24 @@ CREATE TABLE IF NOT EXISTS incidents (
 
 CREATE INDEX IF NOT EXISTS idx_incidents_status_detected
     ON incidents (status, detected_at DESC);
+
+
+-- ------------------------------------------------------------
+-- Upgrade existing databases
+-- ------------------------------------------------------------
+-- CREATE TABLE IF NOT EXISTS does not change a table that is already
+-- there, so the incident types are refreshed here. Safe to run again.
+ALTER TABLE incidents
+    DROP CONSTRAINT IF EXISTS chk_incidents_type;
+
+ALTER TABLE incidents
+    ADD CONSTRAINT chk_incidents_type
+        CHECK (incident_type IN (
+            -- missingness / volume
+            'null_spike', 'volume_drop', 'volume_spike',
+            -- schema and contract
+            'type_change', 'schema_change',
+            'missing_required_field', 'invalid_value', 'type_mismatch',
+            -- distribution drift
+            'numeric_drift', 'categorical_drift'
+        ));

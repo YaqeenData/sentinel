@@ -34,6 +34,80 @@ categorical_drift:
     metric_name: "jensen_shannon_distance"
     severity: "medium"
 
+numeric_drift:
+  resource_type: "Observation"
+  field_name: "numeric_value"
+
+  observations:
+    - code: "8867-4"
+      display: "Heart rate"
+      unit: "bpm"
+    - code: "8480-6"
+      display: "Systolic Blood Pressure"
+      unit: "mmHg"
+    - code: "2339-0"
+      display: "Glucose"
+      unit: "mg/dL"
+
+  detection:
+    method: "ks_test"
+    alpha: 0.05
+    min_effect: 0.15
+    min_samples: 30
+
+  severity:
+    medium: 0.15
+    high: 0.20
+    critical: 0.25
+
+  incident:
+    type: "numeric_drift"
+    metric_name: "median"
+    
 contract:
   enabled: true
   resource_type: "Observation"
+
+patient_contract:
+  enabled: true
+  resource_type: "Patient"
+  rules:
+    required_fields: ["patient_id", "gender", "birth_date"]
+    allowed_gender: ["male", "female", "other", "unknown"]
+    birth_date: "string, valid date, not in the future"
+    marital_status_code: "allowed FHIR marital status, when present"
+
+encounter_class_drift:
+  enabled: true
+  resource_type: "Encounter"
+  field_name: "class_code"
+  detection:
+    method: "jensen_shannon_distance"
+    threshold: 0.20
+    # Last 1,000 distinct Encounters (~1.2 min of stream).
+    # Tested: 0% false alarms on healthy data, 100% of AMB→EMER 30% caught.
+    # 100 gave 10% false alarms: one patient's many visits dominated the sample.
+    min_samples: 1000
+  baseline:
+    source: "config/baselines.json (encounter_class, from Silver run_id=001)"
+  injection:
+    source_class: "AMB"
+    target_class: "EMER"
+    fraction: 0.30
+    seed: 42
+  incident:
+    type: "categorical_drift"
+    metric_name: "jensen_shannon_distance"
+    severity: "medium"
+
+
+encounter_contract:
+  enabled: true
+  resource_type: "Encounter"
+  rules:
+    required_fields: ["encounter_id", "patient_id", "status", "class_code", "start_time"]
+    allowed_status: ["planned", "arrived", "triaged", "in-progress", "onleave", "finished", "cancelled", "entered-in-error", "unknown"]
+    allowed_class_code: ["AMB", "EMER", "FLD", "HH", "IMP", "ACUTE", "NONAC", "OBSENC", "PRENC", "SS", "VR"]
+    start_time: "string, valid date-time, not in the future"
+    end_time: "valid date-time, not before start_time, when present"
+    encounter_id: "unique per window"
