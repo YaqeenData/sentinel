@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'sentinel-site/**'
+      - 'Sentinel_Website/sentinel-site/**'
       - '.github/workflows/sentinel-site-pages.yml'
   workflow_dispatch:
 
@@ -30,11 +30,11 @@ jobs:
           node-version: 22
 
       - name: Install dependencies
-        working-directory: sentinel-site
+        working-directory: Sentinel_Website/sentinel-site
         run: npm install
 
       - name: Build website
-        working-directory: sentinel-site
+        working-directory: Sentinel_Website/sentinel-site
         run: npm run build
 
       - name: Configure Pages
@@ -43,7 +43,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: sentinel-site/dist
+          path: Sentinel_Website/sentinel-site/dist
 
   deploy:
     environment:
