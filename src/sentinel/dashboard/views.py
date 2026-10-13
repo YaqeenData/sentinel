@@ -125,8 +125,57 @@ def _resource_rows(data: ViewData) -> list[dict]:
     return rows
 
 
+def _window_health(data: ViewData) -> None:
+    """Latest completed window: record_count, null_rate and its timestamp."""
+
+    health = data.snapshot.get("window_health")
+
+    with st.container(key="panel-window-health"):
+        ui.section_title(
+            "Latest window · data health",
+            "The most recent completed Observation window from the live stream. "
+            "These numbers describe the data, not the health of patients.",
+        )
+        if health is None:
+            ui.empty_state(
+                "No completed window yet",
+                "Start the monitor; the first window appears here once it closes.",
+            )
+            return
+
+        null_rate = health.get("null_rate")
+        start = to_display_tz(health["window_start"])
+        end = to_display_tz(health["window_end"])
+
+        ui.kpi_tiles(
+            [
+                (
+                    "Records",
+                    f"{int(health['record_count']):,}",
+                    "Observation rows received in the window",
+                    "text",
+                ),
+                (
+                    "Null rate",
+                    "—" if null_rate is None else f"{null_rate:.1%}",
+                    f"Missing {health.get('null_rate_field') or 'numeric_value'} in numeric rows",
+                    "text",
+                ),
+                (
+                    "Data as of",
+                    relative_time(health["window_end"]),
+                    f"Window {start:%H:%M:%S} – {end:%H:%M:%S} · {end:%d %b %Y}",
+                    "text",
+                ),
+            ]
+        )
+        st.write("")
+
+
 def render_overview(data: ViewData) -> None:
     ui.render_hero()
+    _window_health(data)
+    st.write("")
 
     latest_open = data.snapshot["latest_open_incident"]
     incident = latest_open or data.snapshot["latest_incident"]
