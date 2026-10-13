@@ -42,7 +42,7 @@ NEAR_THRESHOLD_RATIO = 0.75
 # proportions, so a small tolerance is needed.
 JSD_VERIFY_TOLERANCE = 0.01
 
-SEVERITY_ORDER = ("low", "medium", "high", "critical")
+SEVERITY_ORDER = ("info", "low", "warning", "medium", "high", "critical")
 STATUS_ORDER = ("open", "acknowledged", "resolved")
 _SEVERITY_RANK = {name: rank for rank, name in enumerate(SEVERITY_ORDER)}
 
@@ -426,8 +426,12 @@ def resource_state(
 
 
 def severity_tone(severity: str | None) -> str:
+    """Map the full incident severity vocabulary to Sentinel UI tones."""
+
     return {
+        "info": "muted",
         "low": "cyan",
+        "warning": "amber",
         "medium": "amber",
         "high": "rose",
         "critical": "rose",

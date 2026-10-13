@@ -15,7 +15,7 @@ from typing import Any
 import pandas as pd
 import streamlit as st
 
-from sentinel.dashboard.model import (
+from sentinel.dashboard.model1 import (
     SEVERITY_ORDER,
     DetectorStatus,
     HealthState,
@@ -382,6 +382,213 @@ def pipeline_strip(open_count: int, health_tone: str, active_detectors: int) -> 
             """
         )
     html(f'<div class="sn-strip">{"".join(parts)}</div>')
+
+
+
+# ---------------------------------------------------------------------------
+# Human-first Overview cards
+# ---------------------------------------------------------------------------
+
+
+def overview_health_card(
+    health: HealthState,
+    open_count: int,
+    active_detectors: int,
+    latest_window: datetime | None,
+) -> None:
+    """Compact current-state card for the Overview page."""
+
+    state = chip(health.label, health.tone, dot=True)
+    latest = (
+        to_display_tz(latest_window).strftime("%H:%M")
+        if latest_window
+        else "—"
+    )
+    noun = "incident" if open_count == 1 else "incidents"
+    open_text = (
+        f"{open_count} open {noun}"
+        if open_count
+        else "No open incidents"
+    )
+
+    html(
+        f"""
+        <div style="min-height:184px;display:flex;flex-direction:column">
+          <div class="sn-card-head" style="margin-bottom:12px">
+            <span class="sn-eyebrow">Overall Data Health</span>
+            {state}
+          </div>
+          <div class="sn-inc-title" style="font-size:1.28rem;margin-top:0">
+            {esc(health.detail)}
+          </div>
+          <div class="sn-inc-sub" style="margin-top:8px">
+            Sentinel derives this state from incidents that are open right now.
+          </div>
+          <div class="sn-stats" style="margin-top:auto">
+            <div class="sn-stat"><span>Detectors reporting</span><b>{active_detectors}</b></div>
+            <div class="sn-stat"><span>Open incidents</span><b>{esc(open_text)}</b></div>
+            <div class="sn-stat"><span>Latest window</span><b>{esc(latest)}</b></div>
+          </div>
+        </div>
+        """
+    )
+
+
+def overview_incident_card(
+    incident: dict | None,
+    *,
+    title: str,
+    summary: str,
+    facts: list[tuple[str, str]],
+    is_open: bool,
+) -> None:
+    """Latest/active incident summary; detail is disclosed separately."""
+
+    if incident is None:
+        html(
+            """
+            <div style="min-height:184px;display:flex;flex-direction:column">
+              <div class="sn-card-head" style="margin-bottom:12px">
+                <span class="sn-eyebrow">Latest Incident</span>
+                <span class="sn-chip sn-green"><span class="sn-dot sn-dot-green"></span>NONE</span>
+              </div>
+              <div class="sn-inc-title sn-text-green" style="font-size:1.28rem;margin-top:0">
+                No incident has been recorded yet
+              </div>
+              <div class="sn-inc-sub" style="margin-top:8px">
+                Sentinel will surface the latest data-health event here when a detector opens one.
+              </div>
+            </div>
+            """
+        )
+        return
+
+    heading = "Active Incident" if is_open else "Latest Incident"
+    status = "OPEN" if is_open else (incident.get("status") or "resolved").upper()
+    status_t = status_tone(incident.get("status"))
+    accent_t = severity_tone(incident.get("severity")) if is_open else "muted"
+    fact_html = "".join(
+        f'<div class="sn-stat"><span>{esc(label)}</span><b>{esc(value)}</b></div>'
+        for label, value in facts[:3]
+    )
+
+    html(
+        f"""
+        <div style="min-height:184px;display:flex;flex-direction:column;border-left:3px solid {tone_color(accent_t)};padding-left:14px">
+          <div class="sn-card-head" style="margin-bottom:10px">
+            <span class="sn-eyebrow">{heading}</span>
+            <span class="sn-chips">{severity_chip(incident.get('severity'))}{chip(status, status_t, dot=True)}</span>
+          </div>
+          <div class="sn-inc-title" style="font-size:1.28rem;margin-top:0">{esc(title)}</div>
+          <div class="sn-inc-sub" style="font-size:0.84rem;margin-top:6px">{esc(summary)}</div>
+          <div class="sn-stats" style="margin-top:auto">{fact_html}</div>
+        </div>
+        """
+    )
+
+
+def detector_state_card(
+    name: str,
+    state_label: str,
+    tone: str,
+    subject: str,
+    primary: str,
+    secondary: str = "",
+) -> None:
+    """One compact state card: state first, human meaning second."""
+
+    secondary_html = (
+        f'<div class="sn-det-line" style="margin-top:3px">{esc(secondary)}</div>'
+        if secondary
+        else ""
+    )
+
+    html(
+        f"""
+        <div style="min-height:112px;display:flex;flex-direction:column">
+          <div class="sn-card-head" style="margin-bottom:10px">
+            <span class="sn-eyebrow">{esc(name)}</span>
+            {chip(state_label, tone, dot=True)}
+          </div>
+          <div class="sn-det-name" style="margin:0 0 7px 0;font-size:0.94rem">{esc(subject)}</div>
+          <div style="font-size:0.88rem;color:{COLORS['text']};font-weight:600">{esc(primary)}</div>
+          {secondary_html}
+        </div>
+        """
+    )
+
+
+def live_context_strip(latest_window: datetime | None) -> None:
+    latest = (
+        to_display_tz(latest_window).strftime("%H:%M")
+        if latest_window
+        else "—"
+    )
+    html(
+        f"""
+        <div class="sn-tech" style="margin-top:12px;padding-top:10px;border-top:1px solid {COLORS['secondary']};display:flex;justify-content:space-between;gap:16px">
+          <span>LIVE · Kafka → 60-second processing windows → 5 detectors → PostgreSQL</span>
+          <span>FHIR Observation · latest window {esc(latest)}</span>
+        </div>
+        """
+    )
+
+
+@st.dialog("Incident details", width="large")
+def overview_incident_dialog(
+    incident: dict,
+    *,
+    title: str,
+    summary: str,
+    facts: list[tuple[str, str]],
+    nav_key: str = "page",
+) -> None:
+    """Human explanation first; implementation details remain secondary."""
+
+    html(
+        f"""
+        <div class="sn-card-head" style="margin-bottom:8px">
+          <div>
+            <div class="sn-inc-type sn-text-{severity_tone(incident.get('severity'))}">{esc(humanize(incident.get('incident_type')))}</div>
+            <div class="sn-inc-title" style="font-size:1.35rem">{esc(title)}</div>
+          </div>
+          <div class="sn-chips">{severity_chip(incident.get('severity'))}{status_chip(incident.get('status'))}</div>
+        </div>
+        <div class="sn-inc-sub" style="font-size:0.9rem;margin:8px 0 14px">{esc(summary)}</div>
+        """
+    )
+
+    kv_panel("What Sentinel observed", facts)
+
+    window_start = incident.get("window_start")
+    window_end = incident.get("window_end")
+    technical = [
+        ("Incident", f"#{incident.get('id')}"),
+        ("FHIR resource", incident.get("resource_type") or "—"),
+        ("Detector event", humanize(incident.get("incident_type"))),
+        ("Metric", humanize(incident.get("metric_name"))),
+        ("Field", incident.get("field_name") or "—"),
+        ("Detected", format_timestamp(incident.get("detected_at"))),
+    ]
+    if window_start and window_end:
+        technical.append(
+            (
+                "Processing window",
+                f"{to_display_tz(window_start).strftime('%H:%M:%S')} – "
+                f"{to_display_tz(window_end).strftime('%H:%M:%S')}",
+            )
+        )
+
+    st.write("")
+    kv_panel("Technical context", technical, mono_values=False)
+
+    if incident.get("message"):
+        st.write("")
+        note(incident["message"])
+
+    if st.button("View in Incidents →", key="overview_go_incidents", width="stretch"):
+        st.session_state[nav_key] = "Incidents"
+        st.rerun()
 
 
 # ---------------------------------------------------------------------------

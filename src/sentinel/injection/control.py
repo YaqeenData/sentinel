@@ -13,14 +13,55 @@ STATE_FILE = (
 )
 
 
-def set_injection_enabled(
-    enabled: bool,
+DEFAULT_INJECTION = "categorical"
+
+
+def _read_state() -> dict[str, bool]:
+    """
+    Read all injection states.
+
+    If no state file exists, return an empty state.
+    """
+
+    if not STATE_FILE.exists():
+        return {}
+
+    try:
+        state = json.loads(
+            STATE_FILE.read_text(
+                encoding="utf-8"
+            )
+        )
+    except (
+        json.JSONDecodeError,
+        OSError,
+    ):
+        return {}
+
+    # Backwards compatibility with the old format:
+    #
+    # {
+    #     "enabled": true
+    # }
+    #
+    if "enabled" in state:
+        return {
+            DEFAULT_INJECTION: bool(
+                state["enabled"]
+            )
+        }
+
+    return {
+        str(name): bool(enabled)
+        for name, enabled in state.items()
+    }
+
+
+def _write_state(
+    state: dict[str, bool],
 ) -> None:
     """
-    Persist the live failure-injection state.
-
-    The state is stored in a small JSON file so an already-running
-    replay process can detect changes without being restarted.
+    Persist all injection states atomically.
     """
 
     STATE_FILE.parent.mkdir(
@@ -34,10 +75,9 @@ def set_injection_enabled(
 
     temporary_file.write_text(
         json.dumps(
-            {
-                "enabled": enabled,
-            },
+            state,
             indent=2,
+            sort_keys=True,
         ),
         encoding="utf-8",
     )
@@ -48,31 +88,42 @@ def set_injection_enabled(
     )
 
 
-def is_injection_enabled() -> bool:
+def set_injection_enabled(
+    enabled: bool,
+    injection: str = DEFAULT_INJECTION,
+) -> None:
     """
-    Return the current live injection state.
-
-    Injection defaults to OFF when no state file exists.
+    Enable or disable one named injection.
     """
 
-    if not STATE_FILE.exists():
-        return False
+    state = _read_state()
 
-    try:
-        state = json.loads(
-            STATE_FILE.read_text(
-                encoding="utf-8"
-            )
-        )
-    except (
-        json.JSONDecodeError,
-        OSError,
-    ):
-        return False
+    state[injection] = enabled
 
-    return bool(
-        state.get(
-            "enabled",
-            False,
-        )
+    _write_state(state)
+
+
+def is_injection_enabled(
+    injection: str = DEFAULT_INJECTION,
+) -> bool:
+    """
+    Return whether one named injection is enabled.
+
+    Defaults to categorical injection so existing
+    replay code continues working unchanged.
+    """
+
+    state = _read_state()
+
+    return state.get(
+        injection,
+        False,
     )
+
+
+def get_injection_states() -> dict[str, bool]:
+    """
+    Return all configured injection states.
+    """
+
+    return _read_state()

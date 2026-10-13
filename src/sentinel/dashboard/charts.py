@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 
 import plotly.graph_objects as go
 
-from sentinel.dashboard.model import (
+from sentinel.dashboard.model1 import (
     THRESHOLD_STATE_TONE,
     humanize,
     threshold_state,

@@ -98,10 +98,11 @@ CREATE TABLE IF NOT EXISTS incidents (
             'numeric_drift', 'categorical_drift'
         )),
     CONSTRAINT chk_incidents_severity
-        CHECK (severity IN ('low', 'medium', 'high', 'critical')),
+        CHECK (severity IN ('low', 'medium', 'high', 'critical', 'info', 'warning')),
     CONSTRAINT chk_incidents_status
         CHECK (status IN ('open', 'acknowledged', 'resolved'))
 );
 
 CREATE INDEX IF NOT EXISTS idx_incidents_status_detected
     ON incidents (status, detected_at DESC);
+    

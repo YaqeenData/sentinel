@@ -136,13 +136,13 @@ st.set_page_config(
 # Sentinel imports
 # ---------------------------------------------------------------------------
 
-from sentinel.dashboard import components as ui  # noqa: E402
-from sentinel.dashboard import views  # noqa: E402
-from sentinel.dashboard.model import (  # noqa: E402
+from sentinel.dashboard import components1 as ui  # noqa: E402
+from sentinel.dashboard import views1  # noqa: E402
+from sentinel.dashboard.model1 import (  # noqa: E402
     categorical_settings,
     load_monitoring_config,
 )
-from sentinel.dashboard.queries import (  # noqa: E402
+from sentinel.dashboard.queries1 import (  # noqa: E402
     load_dashboard_snapshot,
 )
 from sentinel.dashboard.theme import (  # noqa: E402
@@ -163,19 +163,19 @@ CACHE_TTL_SECONDS = 5
 PAGES = {
     "Overview": (
         "overview",
-        views.render_overview,
+        views1.render_overview,
     ),
     "Data Quality": (
         "data-quality",
-        views.render_data_quality,
+        views1.render_data_quality,
     ),
     "Schema & Contracts": (
         "schema",
-        views.render_schema,
+        views1.render_schema,
     ),
     "Incidents": (
         "incidents",
-        views.render_incidents,
+        views1.render_incidents,
     ),
 }
 
@@ -382,7 +382,7 @@ def render_live_dashboard(
     # -----------------------------------------------------------------------
 
     view_data = (
-        views.build_view_data(
+        views1.build_view_data(
             snapshot,
             config,
             settings,

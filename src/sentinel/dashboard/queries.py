@@ -353,6 +353,24 @@ def load_dashboard_snapshot(
                 None,
                 connection=connection,
             ),
+            # Latest-window data for the Overview state cards. These are the
+            # exact metrics persisted by the live monitor; no display values
+            # are fabricated in the dashboard.
+            "missingness_series": get_metric_series(
+                "null_rate",
+                "numeric_value",
+                connection=connection,
+            ),
+            "numeric_drift_series": get_metric_series(
+                "numeric_drift",
+                "numeric_value",
+                connection=connection,
+            ),
+            "volume_series": get_metric_series(
+                "volume",
+                None,
+                connection=connection,
+            ),
         }
         
 

@@ -131,10 +131,10 @@ def check_code(code: str, rows: list[dict], window: dict, reference) -> dict:
 
     if stats["drift_detected"]:
         return _result(window, "distribution_drift", True, severity_for(stats["ks_statistic"]),
-                       stats["reference_median"], stats["current_median"], evidence)
+                        stats["reference_median"], stats["current_median"], evidence)
 
     return _result(window, "numeric_drift_ok", False, "low",
-                   stats["reference_median"], stats["current_median"], evidence)
+                    stats["reference_median"], stats["current_median"], evidence)
 
 
 def check(rows: list[dict], window: dict, baseline: dict | None = None) -> list[dict]:
