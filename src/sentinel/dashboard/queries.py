@@ -256,6 +256,44 @@ def get_metric_series(
     return list(reversed(rows))
 
 
+def get_latest_window_health(
+    resource_type: str = "Observation",
+    connection: psycopg.Connection | None = None,
+) -> dict | None:
+    """
+    record_count and null_rate of the latest completed window.
+
+    Only completed windows are written to quality_metrics, so the newest
+    record_count row is the latest completed window. null_rate is joined
+    from the same window and may be missing (NULL).
+    """
+
+    return _fetch_one(
+        """
+        SELECT
+            rc.window_start,
+            rc.window_end,
+            rc.metric_value AS record_count,
+            nr.metric_value AS null_rate,
+            nr.field_name   AS null_rate_field
+        FROM quality_metrics AS rc
+        JOIN resources AS r
+            ON r.id = rc.resource_id
+        LEFT JOIN quality_metrics AS nr
+            ON nr.resource_id = rc.resource_id
+           AND nr.window_start = rc.window_start
+           AND nr.metric_name = 'null_rate'
+        WHERE r.resource_type = %(resource_type)s
+          AND rc.metric_name = 'record_count'
+          AND rc.field_name IS NULL
+        ORDER BY rc.window_end DESC
+        LIMIT 1;
+        """,
+        {"resource_type": resource_type},
+        connection,
+    )
+
+
 def get_schema_history(
     limit: int = 500,
     connection: psycopg.Connection | None = None,
@@ -341,6 +379,7 @@ def load_dashboard_snapshot(
             "schema_history": get_schema_history(connection=connection),
             "resource_types": get_resource_types(connection),
             "data_as_of": get_data_as_of(connection),
+            "window_health": get_latest_window_health(connection=connection),
             "categorical_history": [],
             "categorical_window_series": [],
             "contract_violation_series": get_metric_series(

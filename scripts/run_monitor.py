@@ -18,6 +18,9 @@ from sentinel.storage.postgres import (
 from sentinel.streaming.consumer import (
     consume_observations,
 )
+from sentinel.streaming.health import (
+    persist_window_health,
+)
 from sentinel.streaming.windows import (
     tumbling_windows,
 )
@@ -335,11 +338,26 @@ def contract_checked_windows(
     windows,
 ):
     """
-    Run contract validation on every completed window,
-    then pass that SAME window to downstream detectors.
+    Store window health (record_count, null_rate) and run
+    contract validation on every completed window, then pass
+    that SAME window to downstream detectors.
     """
 
     for window in windows:
+
+        # record_count + null_rate for the dashboard
+        health = {
+            metric["metric_name"]: metric["metric_value"]
+            for metric in persist_window_health(window, RESOURCE_TYPE)
+        }
+
+        print(
+            f"[HEALTH "
+            f"{window.window_start} → "
+            f"{window.window_end}] "
+            f"records={int(health['record_count'])} | "
+            f"null_rate={health['null_rate']:.2%}"
+        )
 
         persist_contract_window(
             window
