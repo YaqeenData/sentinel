@@ -578,25 +578,6 @@ def _categorical_distribution(spec: dict) -> None:
     )
 
 
-def _categorical_incidents(spec: dict) -> None:
-    rows = [
-        {
-            "id": i["id"],
-            "detected_at": i["detected_at"],
-            "value": _jsd_text(i.get("observed_value")),
-            "duration": _incident_duration(i, spec["all_windows"], spec["threshold"]),
-            "severity": i.get("severity"),
-            "status": i.get("status"),
-        }
-        for i in reversed(spec["history"])
-    ]
-    ui.section_title("Incidents", "Newest first.")
-    if rows:
-        ui.incident_compact_table(rows, value_label="JSD")
-    else:
-        ui.empty_state("No incidents recorded", "Nothing has crossed the threshold yet.")
-
-
 def _render_categorical_page(spec: dict) -> None:
     """One layout for every categorical-drift detector (see the comment above)."""
 
@@ -611,9 +592,6 @@ def _render_categorical_page(spec: dict) -> None:
         _categorical_distribution(spec)
     with config_col, st.container(key=f"panel-{spec['key']}-config"):
         ui.kv_panel("Settings", spec["config_rows"])
-
-    st.write("")
-    _categorical_incidents(spec)
 
 
 # Data Quality is navigated in two levels: FHIR resource, then one of its
@@ -795,16 +773,6 @@ def _dq_resource_changed() -> None:
     st.session_state[RESOURCE_KEY] = st.session_state.get(DQ_RESOURCE_KEY)
 
 
-def _incident_list(rows: list[dict], title: str) -> None:
-    """rows oldest first; shown newest first."""
-
-    ui.section_title(title, "Newest first.")
-    if rows:
-        ui.incident_static_table(list(reversed(rows)), field_label=_field_label)
-    else:
-        ui.empty_state("No incidents recorded", "This detector has not written an incident for this resource.")
-
-
 # --- one view per detector --------------------------------------------------
 
 
@@ -944,7 +912,6 @@ def _dq_contract(data: ViewData, resource: str, detector: Detector) -> None:
         elif violations:
             ui.section_title("Violations per processing window")
             ui.note(f"All {len(violations)} recorded windows passed the contract.", tone="green")
-        _incident_list(incidents, f"{resource} contract incidents")
 
 
 def _dq_numeric(data: ViewData, resource: str, detector: Detector) -> None:
@@ -1033,9 +1000,6 @@ def _dq_numeric(data: ViewData, resource: str, detector: Detector) -> None:
             "Incident-level values only. Medians of healthy windows are not persisted to "
             "quality_metrics yet, so the normal values before a shift do not appear here."
         )
-    st.write("")
-    with st.container(key="panel-dq-numeric-incidents"):
-        _incident_list(series, f"{field_label} incidents")
 
 
 def _dq_categorical_configured(data: ViewData) -> None:
@@ -1165,7 +1129,6 @@ def _dq_generic(data: ViewData, resource: str, detector: Detector) -> None:
                     height=260,
                 )
             )
-        _incident_list(rows, "Incidents")
 
 
 def render_data_quality(data: ViewData) -> None:
@@ -1357,7 +1320,6 @@ def _filter_incidents(
             options=[
                 "All statuses",
                 "Open",
-                "Acknowledged",
                 "Resolved",
             ],
             key="incident_status_filter",
@@ -1476,12 +1438,6 @@ def render_incidents(data: ViewData) -> None:
                 "amber" if opened else "green",
             ),
             (
-                "Acknowledged",
-                str(data.counts_by_status.get("acknowledged", 0)),
-                "under investigation",
-                "blue",
-            ),
-            (
                 "Resolved",
                 str(data.counts_by_status.get("resolved", 0)),
                 "closed",
@@ -1506,52 +1462,10 @@ def render_incidents(data: ViewData) -> None:
         return
 
     # ---------------------------------------------------------
-    # Severity + activity
+    # Activity
     # ---------------------------------------------------------
 
-    sev_col, chart_col = st.columns(
-        [1, 1.9],
-        gap="medium",
-    )
-
-    with sev_col, st.container(
-        key="panel-severity",
-    ):
-        ui.section_title(
-            "Severity breakdown",
-            "All incidents, all-time.",
-        )
-
-        ui.severity_breakdown(
-            data.counts_by_severity
-        )
-
-        st.write("")
-
-        ui.section_title(
-            "Status breakdown"
-        )
-
-        status_rows = [
-            (
-                status.title(),
-                str(
-                    data.counts_by_status.get(
-                        status,
-                        0,
-                    )
-                ),
-            )
-            for status in STATUS_ORDER
-        ]
-
-        ui.kv_panel(
-            "",
-            status_rows,
-            mono_values=True,
-        )
-
-    with chart_col, st.container(
+    with st.container(
         key="panel-activity",
     ):
         _adaptive_incident_chart(
