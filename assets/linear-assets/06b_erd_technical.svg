@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" font-family="Inter, 'Segoe UI', Arial, Helvetica, sans-serif">
+<title>Monitoring Database — Technical ERD</title>
+<rect id="background" x="0" y="0" width="1600" height="900" fill="#07111F"/>
+<g id="connectors">
+<g id="edge-quality_metrics.id-incidents.quality_metric_id"><polyline points="480.0,167.0 540.0,167.0 540.0,427.0 600.0,427.0" fill="none" stroke="#22D3EE" stroke-width="1.6" stroke-linejoin="round"/><text font-size="13" font-weight="700" fill="#F1F5F9" text-anchor="middle" x="502.0" y="159.0">1</text><text font-size="13" font-weight="700" fill="#F1F5F9" text-anchor="middle" x="578.0" y="419.0">0..*</text></g>
+<g id="edge-baseline_metrics.id-incidents.baseline_metric_id"><polyline points="480.0,467.0 540.0,467.0 540.0,453.0 600.0,453.0" fill="none" stroke="#22D3EE" stroke-width="1.6" stroke-linejoin="round"/><text font-size="13" font-weight="700" fill="#F1F5F9" text-anchor="middle" x="502.0" y="459.0">1</text><text font-size="13" font-weight="700" fill="#F1F5F9" text-anchor="middle" x="578.0" y="445.0">0..*</text></g>
+<g id="edge-schema_history.id-incidents.schema_change_id"><polyline points="1140.0,167.0 1090.0,167.0 1090.0,479.0 1040.0,479.0" fill="none" stroke="#22D3EE" stroke-width="1.6" stroke-linejoin="round"/><text font-size="13" font-weight="700" fill="#F1F5F9" text-anchor="middle" x="1118.0" y="159.0">1</text><text font-size="13" font-weight="700" fill="#F1F5F9" text-anchor="middle" x="1062.0" y="471.0">0..1</text></g>
+<g id="edge-quality_metrics.created_at-baseline_metrics"><polyline points="270.0,336.0 270.0,420.0" fill="none" stroke="#94A3B8" stroke-width="1.6" stroke-dasharray="6 4" stroke-linejoin="round"/><rect x="148.5" y="358.8" width="243.0" height="38.5" rx="3" fill="#07111F"/><text font-size="13" fill="#94A3B8" text-anchor="middle"><tspan x="270.0" y="374.1">logical match on</tspan><tspan x="270.0" y="390.4">metric_name + field_name (no FK)</tspan></text></g>
+</g>
+<g id="title"><text font-size="30" fill="#F1F5F9" text-anchor="start" font-weight="700"><tspan x="62.0" y="56.3">Monitoring Database — Technical ERD</tspan></text></g>
+<g id="subtitle"><text font-size="16" fill="#94A3B8" text-anchor="start" font-style="italic"><tspan x="62.0" y="88.0">Four tables are enough for this week's scope — long-format metrics, incidents linked to their evidence</tspan></text></g>
+<g id="quality_metrics"><rect x="60" y="120" width="420" height="34" rx="4" fill="#17283D" stroke="#22D3EE" stroke-width="1.5"/><text font-size="15" fill="#F1F5F9" text-anchor="start" font-weight="700"><tspan x="74.0" y="141.7">quality_metrics</tspan></text></g>
+<g id="quality_metrics.id"><rect x="60" y="154" width="420" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="quality_metrics.id-key"><text font-size="11" fill="#22D3EE" text-anchor="start" font-weight="700"><tspan x="70.0" y="170.4">PK</tspan></text></g>
+<g id="quality_metrics.id-name"><text font-size="13" fill="#F1F5F9" text-anchor="start" font-weight="700"><tspan x="106.0" y="171.0">id</tspan></text></g>
+<g id="quality_metrics.id-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="468.0" y="170.4">BIGSERIAL</tspan></text></g>
+<g id="quality_metrics.window_start"><rect x="60" y="180" width="420" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="quality_metrics.window_start-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="106.0" y="197.0">window_start</tspan></text></g>
+<g id="quality_metrics.window_start-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="468.0" y="196.4">TIMESTAMPTZ NOT NULL</tspan></text></g>
+<g id="quality_metrics.window_end"><rect x="60" y="206" width="420" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="quality_metrics.window_end-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="106.0" y="223.0">window_end</tspan></text></g>
+<g id="quality_metrics.window_end-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="468.0" y="222.4">TIMESTAMPTZ NOT NULL</tspan></text></g>
+<g id="quality_metrics.metric_name"><rect x="60" y="232" width="420" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="quality_metrics.metric_name-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="106.0" y="249.0">metric_name</tspan></text></g>
+<g id="quality_metrics.metric_name-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="468.0" y="248.4">TEXT NOT NULL</tspan></text></g>
+<g id="quality_metrics.field_name"><rect x="60" y="258" width="420" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="quality_metrics.field_name-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="106.0" y="275.0">field_name</tspan></text></g>
+<g id="quality_metrics.field_name-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="468.0" y="274.4">TEXT NULL</tspan></text></g>
+<g id="quality_metrics.metric_value"><rect x="60" y="284" width="420" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="quality_metrics.metric_value-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="106.0" y="301.0">metric_value</tspan></text></g>
+<g id="quality_metrics.metric_value-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="468.0" y="300.4">DOUBLE PRECISION NOT NULL</tspan></text></g>
+<g id="quality_metrics.created_at"><rect x="60" y="310" width="420" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="quality_metrics.created_at-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="106.0" y="327.0">created_at</tspan></text></g>
+<g id="quality_metrics.created_at-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="468.0" y="326.4">TIMESTAMPTZ DEFAULT now()</tspan></text></g>
+<g id="baseline_metrics"><rect x="60" y="420" width="420" height="34" rx="4" fill="#17283D" stroke="#22D3EE" stroke-width="1.5"/><text font-size="15" fill="#F1F5F9" text-anchor="start" font-weight="700"><tspan x="74.0" y="441.6">baseline_metrics</tspan></text></g>
+<g id="baseline_metrics.id"><rect x="60" y="454" width="420" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="baseline_metrics.id-key"><text font-size="11" fill="#22D3EE" text-anchor="start" font-weight="700"><tspan x="70.0" y="470.4">PK</tspan></text></g>
+<g id="baseline_metrics.id-name"><text font-size="13" fill="#F1F5F9" text-anchor="start" font-weight="700"><tspan x="106.0" y="471.0">id</tspan></text></g>
+<g id="baseline_metrics.id-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="468.0" y="470.4">BIGSERIAL</tspan></text></g>
+<g id="baseline_metrics.metric_name"><rect x="60" y="480" width="420" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="baseline_metrics.metric_name-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="106.0" y="497.0">metric_name</tspan></text></g>
+<g id="baseline_metrics.metric_name-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="468.0" y="496.4">TEXT NOT NULL</tspan></text></g>
+<g id="baseline_metrics.field_name"><rect x="60" y="506" width="420" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="baseline_metrics.field_name-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="106.0" y="523.0">field_name</tspan></text></g>
+<g id="baseline_metrics.field_name-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="468.0" y="522.4">TEXT NULL</tspan></text></g>
+<g id="baseline_metrics.baseline_value"><rect x="60" y="532" width="420" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="baseline_metrics.baseline_value-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="106.0" y="549.0">baseline_value</tspan></text></g>
+<g id="baseline_metrics.baseline_value-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="468.0" y="548.4">DOUBLE PRECISION NOT NULL</tspan></text></g>
+<g id="baseline_metrics.lower_threshold"><rect x="60" y="558" width="420" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="baseline_metrics.lower_threshold-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="106.0" y="575.0">lower_threshold</tspan></text></g>
+<g id="baseline_metrics.lower_threshold-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="468.0" y="574.4">DOUBLE PRECISION NULL</tspan></text></g>
+<g id="baseline_metrics.upper_threshold"><rect x="60" y="584" width="420" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="baseline_metrics.upper_threshold-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="106.0" y="601.0">upper_threshold</tspan></text></g>
+<g id="baseline_metrics.upper_threshold-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="468.0" y="600.4">DOUBLE PRECISION NULL</tspan></text></g>
+<g id="baseline_metrics.calculated_at"><rect x="60" y="610" width="420" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="baseline_metrics.calculated_at-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="106.0" y="627.0">calculated_at</tspan></text></g>
+<g id="baseline_metrics.calculated_at-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="468.0" y="626.4">TIMESTAMPTZ DEFAULT now()</tspan></text></g>
+<g id="incidents"><rect x="600" y="120" width="440" height="34" rx="4" fill="#17283D" stroke="#22D3EE" stroke-width="1.5"/><text font-size="15" fill="#F1F5F9" text-anchor="start" font-weight="700"><tspan x="614.0" y="141.7">incidents</tspan></text></g>
+<g id="incidents.id"><rect x="600" y="154" width="440" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="incidents.id-key"><text font-size="11" fill="#22D3EE" text-anchor="start" font-weight="700"><tspan x="610.0" y="170.4">PK</tspan></text></g>
+<g id="incidents.id-name"><text font-size="13" fill="#F1F5F9" text-anchor="start" font-weight="700"><tspan x="646.0" y="171.0">id</tspan></text></g>
+<g id="incidents.id-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="1028.0" y="170.4">BIGSERIAL</tspan></text></g>
+<g id="incidents.detected_at"><rect x="600" y="180" width="440" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="incidents.detected_at-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="646.0" y="197.0">detected_at</tspan></text></g>
+<g id="incidents.detected_at-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="1028.0" y="196.4">TIMESTAMPTZ NOT NULL</tspan></text></g>
+<g id="incidents.incident_type"><rect x="600" y="206" width="440" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="incidents.incident_type-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="646.0" y="223.0">incident_type</tspan></text></g>
+<g id="incidents.incident_type-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="1028.0" y="222.4">TEXT NOT NULL</tspan></text></g>
+<g id="incidents.metric_name"><rect x="600" y="232" width="440" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="incidents.metric_name-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="646.0" y="249.0">metric_name</tspan></text></g>
+<g id="incidents.metric_name-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="1028.0" y="248.4">TEXT NULL</tspan></text></g>
+<g id="incidents.field_name"><rect x="600" y="258" width="440" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="incidents.field_name-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="646.0" y="275.0">field_name</tspan></text></g>
+<g id="incidents.field_name-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="1028.0" y="274.4">TEXT NULL</tspan></text></g>
+<g id="incidents.observed_value"><rect x="600" y="284" width="440" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="incidents.observed_value-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="646.0" y="301.0">observed_value</tspan></text></g>
+<g id="incidents.observed_value-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="1028.0" y="300.4">DOUBLE PRECISION NULL</tspan></text></g>
+<g id="incidents.baseline_value"><rect x="600" y="310" width="440" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="incidents.baseline_value-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="646.0" y="327.0">baseline_value</tspan></text></g>
+<g id="incidents.baseline_value-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="1028.0" y="326.4">DOUBLE PRECISION NULL</tspan></text></g>
+<g id="incidents.severity"><rect x="600" y="336" width="440" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="incidents.severity-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="646.0" y="353.0">severity</tspan></text></g>
+<g id="incidents.severity-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="1028.0" y="352.4">TEXT NOT NULL</tspan></text></g>
+<g id="incidents.status"><rect x="600" y="362" width="440" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="incidents.status-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="646.0" y="379.0">status</tspan></text></g>
+<g id="incidents.status-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="1028.0" y="378.4">TEXT DEFAULT 'open'</tspan></text></g>
+<g id="incidents.message"><rect x="600" y="388" width="440" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="incidents.message-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="646.0" y="405.0">message</tspan></text></g>
+<g id="incidents.message-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="1028.0" y="404.4">TEXT</tspan></text></g>
+<g id="incidents.quality_metric_id"><rect x="600" y="414" width="440" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="incidents.quality_metric_id-key"><text font-size="11" fill="#22D3EE" text-anchor="start" font-weight="700"><tspan x="610.0" y="430.4">FK</tspan></text></g>
+<g id="incidents.quality_metric_id-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="646.0" y="431.0">quality_metric_id</tspan></text></g>
+<g id="incidents.quality_metric_id-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="1028.0" y="430.4">BIGINT NULL</tspan></text></g>
+<g id="incidents.baseline_metric_id"><rect x="600" y="440" width="440" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="incidents.baseline_metric_id-key"><text font-size="11" fill="#22D3EE" text-anchor="start" font-weight="700"><tspan x="610.0" y="456.4">FK</tspan></text></g>
+<g id="incidents.baseline_metric_id-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="646.0" y="457.0">baseline_metric_id</tspan></text></g>
+<g id="incidents.baseline_metric_id-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="1028.0" y="456.4">BIGINT NULL</tspan></text></g>
+<g id="incidents.schema_change_id"><rect x="600" y="466" width="440" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="incidents.schema_change_id-key"><text font-size="11" fill="#22D3EE" text-anchor="start" font-weight="700"><tspan x="610.0" y="482.4">FK</tspan></text></g>
+<g id="incidents.schema_change_id-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="646.0" y="483.0">schema_change_id</tspan></text></g>
+<g id="incidents.schema_change_id-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="1028.0" y="482.4">BIGINT NULL</tspan></text></g>
+<g id="schema_history"><rect x="1140" y="120" width="420" height="34" rx="4" fill="#17283D" stroke="#22D3EE" stroke-width="1.5"/><text font-size="15" fill="#F1F5F9" text-anchor="start" font-weight="700"><tspan x="1154.0" y="141.7">schema_history</tspan></text></g>
+<g id="schema_history.id"><rect x="1140" y="154" width="420" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="schema_history.id-key"><text font-size="11" fill="#22D3EE" text-anchor="start" font-weight="700"><tspan x="1150.0" y="170.4">PK</tspan></text></g>
+<g id="schema_history.id-name"><text font-size="13" fill="#F1F5F9" text-anchor="start" font-weight="700"><tspan x="1186.0" y="171.0">id</tspan></text></g>
+<g id="schema_history.id-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="1548.0" y="170.4">BIGSERIAL</tspan></text></g>
+<g id="schema_history.observed_at"><rect x="1140" y="180" width="420" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="schema_history.observed_at-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="1186.0" y="197.0">observed_at</tspan></text></g>
+<g id="schema_history.observed_at-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="1548.0" y="196.4">TIMESTAMPTZ NOT NULL</tspan></text></g>
+<g id="schema_history.field_name"><rect x="1140" y="206" width="420" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="schema_history.field_name-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="1186.0" y="223.0">field_name</tspan></text></g>
+<g id="schema_history.field_name-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="1548.0" y="222.4">TEXT NOT NULL</tspan></text></g>
+<g id="schema_history.observed_type"><rect x="1140" y="232" width="420" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="schema_history.observed_type-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="1186.0" y="249.0">observed_type</tspan></text></g>
+<g id="schema_history.observed_type-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="1548.0" y="248.4">TEXT NULL</tspan></text></g>
+<g id="schema_history.previous_type"><rect x="1140" y="258" width="420" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="schema_history.previous_type-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="1186.0" y="275.0">previous_type</tspan></text></g>
+<g id="schema_history.previous_type-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="1548.0" y="274.4">TEXT NULL</tspan></text></g>
+<g id="schema_history.change_type"><rect x="1140" y="284" width="420" height="26" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1"/></g>
+<g id="schema_history.change_type-name"><text font-size="13" fill="#F1F5F9" text-anchor="start"><tspan x="1186.0" y="301.0">change_type</tspan></text></g>
+<g id="schema_history.change_type-type"><text font-size="11" fill="#94A3B8" text-anchor="end"><tspan x="1548.0" y="300.4">TEXT NOT NULL</tspan></text></g>
+<g id="constraints"><rect x="600" y="524" width="440" height="150" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1.5"/><text font-size="12" fill="#F1F5F9" text-anchor="start"><tspan x="612.0" y="547.0">CHECK CONSTRAINTS</tspan><tspan x="612.0" y="562.4">incident_type IN (null_spike, type_change, volume_drop, schema_change)</tspan><tspan x="612.0" y="577.8">severity IN (low, medium, high, critical)</tspan><tspan x="612.0" y="593.1">status IN (open, acknowledged, resolved)</tspan><tspan x="612.0" y="608.5">change_type IN (added, removed, type_changed)</tspan></text></g>
+<g id="indexes"><rect x="1140" y="340" width="420" height="170" rx="4" fill="#101D2E" stroke="#17283D" stroke-width="1.5"/><text font-size="12" fill="#F1F5F9" text-anchor="start"><tspan x="1152.0" y="363.0">INDEXES WORTH ADDING</tspan><tspan x="1152.0" y="378.4">quality_metrics (window_end DESC)</tspan><tspan x="1152.0" y="393.8">UNIQUE quality_metrics (window_start, metric_name,</tspan><tspan x="1152.0" y="409.1">  field_name) NULLS NOT DISTINCT — idempotent writes</tspan><tspan x="1152.0" y="424.5">incidents (status, detected_at DESC)</tspan><tspan x="1152.0" y="439.8">schema_history (field_name, observed_at DESC)</tspan><tspan x="1152.0" y="455.2">baseline_metrics (metric_name, field_name, calculated_at DESC)</tspan></text></g>
+<g id="scope"><rect x="1140" y="530" width="420" height="186" rx="4" fill="#101D2E" stroke="#94A3B8" stroke-width="1.5"/><text font-size="12" fill="#F1F5F9" text-anchor="start"><tspan x="1152.0" y="553.0">SCOPE DECISION</tspan><tspan x="1152.0" y="568.4">• Keep 4 tables; no extra windows/runs table</tspan><tspan x="1152.0" y="583.8">• One metric row per window × metric × field</tspan><tspan x="1152.0" y="599.1">• Incident FKs point to the evidence row</tspan><tspan x="1152.0" y="614.5">• baseline_value copied onto incident on purpose</tspan><tspan x="1152.0" y="629.8">  (baselines are recalculated later)</tspan><tspan x="1152.0" y="645.2">• No patient or clinical tables</tspan></text></g>
+<g id="legend"><text font-size="13" fill="#94A3B8" text-anchor="start"><tspan x="62.0" y="837.0">PK primary key · FK foreign key · crow's-foot ends: 1 / 0..* / 0..1 · all incident FKs nullable — set according to incident_type</tspan></text></g>
+</svg>
