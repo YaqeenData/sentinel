@@ -6,12 +6,13 @@ Only the distribution moves, which is what the numeric drift detector looks for.
 """
 
 import copy
+import os
 
 import numpy as np
 import pandas as pd
 
 
-SILVER_PATH = "gs://sentinel-de-fhir-data/silver/observations/run_id=001/observations.parquet"
+SILVER_PATH = os.getenv("SENTINEL_SILVER_PATH")
 
 # Measurements we inject into (LOINC code -> readable name).
 INJECTABLE_CODES = {
@@ -24,8 +25,14 @@ INJECTABLE_CODES = {
 SHIFT_K = 0.75
 
 
-def load_baseline(codes=INJECTABLE_CODES, path: str = SILVER_PATH) -> dict[str, list[float]]:
+def load_baseline(codes=INJECTABLE_CODES, path: str | None = SILVER_PATH) -> dict[str, list[float]]:
     """Read the healthy values for each code. Returns {code: [values]}."""
+    if not path:
+        raise ValueError(
+            "SENTINEL_SILVER_PATH is not configured. "
+            "Set it to the Observation Silver Parquet path."
+        )
+
     df = pd.read_parquet(path, columns=["code", "numeric_value"])
     df = df[df["code"].isin(list(codes))].dropna(subset=["numeric_value"])
     return {code: group["numeric_value"].tolist() for code, group in df.groupby("code")}

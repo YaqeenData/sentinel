@@ -1,0 +1,71 @@
+<svg class="sn" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 460" role="img" aria-labelledby="t d" fill="none">
+<title id="t">Sentinel detection engine</title>
+<desc id="d">A 60-second window closes and five detectors run on it: contract (rule-based), missingness (null-rate comparison), numeric drift (two-sample KS), categorical drift (Jensen-Shannon distance) and volume (median and MAD). Each compares the window with a fixed healthy baseline or configured rules. If any threshold is crossed an incident is opened; otherwise the window is recorded as healthy. An open incident is resolved when healthy behavior returns.</desc>
+<style>svg.sn{--sn-surface:var(--surface,#101d2e);--sn-soft:var(--bg-soft,#0b1727);--sn-line:var(--line,#263a52);--sn-strong:var(--line-strong,#1c6b80);--sn-text:var(--text,#f1f5f9);--sn-muted:var(--muted,#94a3b8);--sn-cyan:var(--cyan,#22d3ee);--sn-blue:var(--blue,#3b82f6);--sn-tint:color-mix(in srgb, var(--cyan,#22d3ee) 9%, var(--surface,#101d2e));--sn-green:var(--green,#22c55e);--sn-amber:var(--amber,#f59e0b);font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+.sn .node{fill:var(--sn-surface);stroke:var(--sn-line);stroke-width:1}
+.sn .core{fill:var(--sn-tint);stroke:var(--sn-cyan);stroke-width:1.4}
+.sn .accent{fill:var(--sn-surface);stroke:var(--sn-strong);stroke-width:1.2}
+.sn .t{fill:var(--sn-text);font-weight:600;font-size:14px}
+.sn .s{fill:var(--sn-muted);font-family:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;font-size:10px}
+.sn .tag{font-family:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;font-size:8.5px;letter-spacing:.12em;font-weight:500}
+.sn .lane{font-family:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;font-size:10.5px;letter-spacing:.12em;font-weight:500}
+.sn .c{fill:var(--sn-cyan)} .sn .b{fill:var(--sn-blue)} .sn .m{fill:var(--sn-muted)}
+.sn .arrow{fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.sn .a-live{stroke:var(--sn-cyan)} .sn .a-ref{stroke:var(--sn-blue)} .sn .a-mut{stroke:var(--sn-muted)}
+.sn .ok{fill:var(--sn-surface);stroke:var(--sn-green);stroke-width:1.3} .sn .warn{fill:var(--sn-surface);stroke:var(--sn-amber);stroke-width:1.3}
+.sn .g{fill:var(--sn-green)} .sn .am{fill:var(--sn-amber)} .sn .div{stroke:var(--sn-line);stroke-width:1;fill:none} .sn .t2{fill:var(--sn-text);font-weight:500;font-size:12.5px}
+.sn .a-grn{stroke:var(--sn-green)} .sn .a-amb{stroke:var(--sn-amber)}
+.sn .head-live{fill:var(--sn-cyan)} .sn .head-ref{fill:var(--sn-blue)}
+</style>
+<defs><marker id="hl" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1.5 L8.5 5 L1 8.5" fill="none" stroke="var(--sn-cyan)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker><marker id="hr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1.5 L8.5 5 L1 8.5" fill="none" stroke="var(--sn-blue)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker><marker id="hg" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1.5 L8.5 5 L1 8.5" fill="none" stroke="var(--sn-green)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker><marker id="ha" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1.5 L8.5 5 L1 8.5" fill="none" stroke="var(--sn-amber)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<rect class="accent" x="380" y="10" width="230" height="36" rx="10"/><text class="tag b" x="394" y="25">REFERENCE</text><text class="s" x="394" y="39">Baselines · fixed, healthy</text>
+<path class="arrow a-ref" d="M495 52 V70" marker-end="url(#hr)"/>
+<text class="tag m" x="216" y="84">DETECTOR</text>
+<text class="tag m" x="396" y="84">COMPARES</text>
+<text class="tag m" x="626" y="84">TRIGGERS WHEN</text>
+<rect class="node" x="30" y="210" width="120" height="84" rx="10"/><text class="tag c" x="44" y="229">INPUT</text><text class="t" x="44" y="252">Window</text><text class="s" x="44" y="269">60 seconds</text><text class="s" x="44" y="282">one resource</text>
+<path class="arrow a-live" d="M150 252 H168"/><path class="arrow a-live" d="M168 120.0 V384.0"/>
+<path class="arrow a-live" d="M168 120.0 H192" marker-end="url(#hl)"/>
+<rect class="node" x="200" y="92" width="620" height="56" rx="10"/>
+<path class="div" d="M380 102 V138 M610 102 V138"/>
+<text class="t" x="216" y="117">Contract</text><text class="s" x="216" y="134">rule-based</text>
+<text class="t2" x="396" y="117">Record vs rules</text><text class="s" x="396" y="134">required · allowed · types</text>
+<text class="t2" x="626" y="117">Any violation</text><text class="s" x="626" y="134">explicit expectations</text>
+<path class="arrow a-live" d="M824 120.0 H842"/>
+<path class="arrow a-live" d="M168 186.0 H192" marker-end="url(#hl)"/>
+<rect class="node" x="200" y="158" width="620" height="56" rx="10"/>
+<path class="div" d="M380 168 V204 M610 168 V204"/>
+<text class="t" x="216" y="183">Missingness</text><text class="s" x="216" y="200">rate comparison</text>
+<text class="t2" x="396" y="183">Null rate</text><text class="s" x="396" y="200">vs historical null rate</text>
+<text class="t2" x="626" y="183">Rate above threshold</text><text class="s" x="626" y="200">per monitored field</text>
+<path class="arrow a-live" d="M824 186.0 H842"/>
+<path class="arrow a-live" d="M168 252.0 H192" marker-end="url(#hl)"/>
+<rect class="node" x="200" y="224" width="620" height="56" rx="10"/>
+<path class="div" d="M380 234 V270 M610 234 V270"/>
+<text class="t" x="216" y="249">Numeric drift</text><text class="s" x="216" y="266">two-sample KS</text>
+<text class="t2" x="396" y="249">Window sample</text><text class="s" x="396" y="266">vs baseline sample</text>
+<text class="t2" x="626" y="249">Min samples met,</text><text class="s" x="626" y="266">significant and large D</text>
+<path class="arrow a-live" d="M824 252.0 H842"/>
+<path class="arrow a-live" d="M168 318.0 H192" marker-end="url(#hl)"/>
+<rect class="node" x="200" y="290" width="620" height="56" rx="10"/>
+<path class="div" d="M380 300 V336 M610 300 V336"/>
+<text class="t" x="216" y="315">Categorical drift</text><text class="s" x="216" y="332">Jensen–Shannon</text>
+<text class="t2" x="396" y="315">Category shares</text><text class="s" x="396" y="332">vs baseline proportions</text>
+<text class="t2" x="626" y="315">Distance over 0.20</text><text class="s" x="626" y="332">min 100 patients</text>
+<path class="arrow a-live" d="M824 318.0 H842"/>
+<path class="arrow a-live" d="M168 384.0 H192" marker-end="url(#hl)"/>
+<rect class="node" x="200" y="356" width="620" height="56" rx="10"/>
+<path class="div" d="M380 366 V402 M610 366 V402"/>
+<text class="t" x="216" y="381">Volume</text><text class="s" x="216" y="398">median + MAD</text>
+<text class="t2" x="396" y="381">Records per window</text><text class="s" x="396" y="398">vs historical median</text>
+<text class="t2" x="626" y="381">Outside MAD band</text><text class="s" x="626" y="398">plus % guardrail</text>
+<path class="arrow a-live" d="M824 384.0 H842"/>
+<path class="arrow a-live" d="M842 120.0 V384.0"/><path class="arrow a-live" d="M842 252 H852" marker-end="url(#hl)"/>
+<rect class="core" x="860" y="210" width="140" height="84" rx="10"/><text class="tag c" x="874" y="229">EVALUATE</text><text class="t" x="874" y="252" style="font-size:13px">Any threshold</text><text class="t" x="874" y="269" style="font-size:13px">crossed?</text>
+<path class="arrow a-grn" d="M1000 252 H1020 V170 H1030" marker-end="url(#hg)"/><text class="s g" x="1003" y="246" style="font-size:9.5px">no</text>
+<path class="arrow a-amb" d="M1000 252 H1020 V297 H1030" marker-end="url(#ha)"/><text class="s am" x="1002" y="267" style="font-size:9.5px">yes</text>
+<rect class="ok" x="1036" y="135" width="140" height="76" rx="10"/><text class="tag g" x="1050" y="152">NORMAL</text><text class="t" x="1050" y="172">Healthy</text><text class="s" x="1050" y="188">metrics recorded</text>
+<rect class="warn" x="1036" y="262" width="140" height="76" rx="10"/><text class="tag am" x="1050" y="279">ABNORMAL</text><text class="t" x="1050" y="299">Incident</text><text class="s" x="1050" y="315">status open</text><text class="s" x="1050" y="327">severity set</text>
+<path class="arrow a-mut" d="M1106 342 V362" marker-end="url(#hl)"/><text class="s m" x="1116" y="356">recovers</text>
+<rect class="ok" x="1036" y="368" width="140" height="76" rx="10"/><text class="tag g" x="1050" y="385">RECOVERY</text><text class="t" x="1050" y="405">Resolved</text><text class="s" x="1050" y="421">healthy returns</text>
+</svg>

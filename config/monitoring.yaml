@@ -111,3 +111,4 @@ encounter_contract:
     start_time: "string, valid date-time, not in the future"
     end_time: "valid date-time, not before start_time, when present"
     encounter_id: "unique per window"
+    

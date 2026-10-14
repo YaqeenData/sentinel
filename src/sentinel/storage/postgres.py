@@ -389,3 +389,65 @@ def resolve_incident(
                 )
 
             connection.commit()
+
+def save_quality_window(
+    resource_type: str,
+    window_start: datetime,
+    window_end: datetime,
+    metrics: list[dict],
+) -> int:
+    """
+    Persist all quality metrics for one completed processing window.
+
+    This is a convenience wrapper around upsert_quality_metric().
+    Returns the number of metrics written.
+    """
+
+    for metric in metrics:
+        upsert_quality_metric(
+            resource_type=resource_type,
+            window_start=window_start,
+            window_end=window_end,
+            metric_name=metric["metric_name"],
+            field_name=metric.get("field_name"),
+            metric_value=metric["metric_value"],
+        )
+
+    return len(metrics)
+
+
+def save_incident(
+    resource_type: str,
+    incident_type: str,
+    severity: str,
+    metric_name: str | None = None,
+    field_name: str | None = None,
+    observed_value: float | None = None,
+    baseline_value: float | None = None,
+    message: str | None = None,
+    quality_metric_id: int | None = None,
+    baseline_metric_id: int | None = None,
+    schema_change_id: int | None = None,
+    detected_at: datetime | None = None,
+) -> int:
+    """
+    Persist an incident using the current Sentinel incident storage API.
+
+    Kept as a convenience interface for detector scripts that produce
+    incident keyword arguments.
+    """
+
+    return insert_incident(
+        resource_type=resource_type,
+        detected_at=detected_at or datetime.now(timezone.utc),
+        incident_type=incident_type,
+        severity=severity,
+        metric_name=metric_name,
+        field_name=field_name,
+        observed_value=observed_value,
+        baseline_value=baseline_value,
+        message=message,
+        quality_metric_id=quality_metric_id,
+        baseline_metric_id=baseline_metric_id,
+        schema_change_id=schema_change_id,
+    )

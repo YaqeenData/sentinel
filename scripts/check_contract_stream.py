@@ -22,7 +22,7 @@ def main():
     seconds = int(args[0]) if args else 60
     save = "--save" in sys.argv
     if save:
-        from sentinel.storage.posgres import save_incident
+        from sentinel.storage.postgres import save_incident
     print(f"Contract check on Kafka stream, {seconds}-second windows\n")
 
     for w in tumbling_windows(consume_observations(), window_seconds=seconds):
