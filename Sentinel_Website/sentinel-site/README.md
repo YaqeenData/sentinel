@@ -28,7 +28,7 @@ The production site is created in `sentinel-site/dist/`.
 
 ## Where to edit content
 
-- `src/data/site.ts`: **all links** (`LIVE_DEMO_URL`, `REPOSITORY_URL`), team data, demo video/poster paths and the architecture image. The ngrok live-demo URL is changed here and only here; every button reads it through `LiveDemoLink`.
+- `src/data/site.ts`: **all links** (`REPOSITORY_URL`), team data, demo video/poster paths and the architecture image. The site has no live-demo link; the product demo is the recorded video.
 - `src/data/content.ts`: all home-page copy (snapshot, Aisha scenario, resources, downstream value, product journey, the five checks, architecture notes, scope).
 - `src/pages/HomePage.tsx`: layout only. `src/refine.css` holds the styles for the sections added in this update (`rf-*`), on top of `styles.css` and `redesign.css`.
 

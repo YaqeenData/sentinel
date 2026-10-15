@@ -13,7 +13,7 @@ It currently monitors Patient, Encounter and Observation data and turns abnormal
 ## Links
 
 - **Case study:** <https://yaqeendata.github.io/sentinel/>
-- **Live demo:** <https://tamer-manlike-skeleton.ngrok-free.dev/?page=overview> (a temporary ngrok endpoint, so it may change or be offline)
+- **Demo video:** a short recorded walkthrough is on the case-study site.
 
 ## Why Sentinel?
 
