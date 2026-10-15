@@ -1,7 +1,7 @@
 # Website update summary
 
 ## New information architecture (home page, one continuous story)
-1. Hero: "The pipeline can be green while the data is wrong." with Watch Demo / View GitHub
+1. Hero: "The pipeline is green… but is the data healthy?" with Watch Demo / View GitHub
 2. Executive snapshot: what it is, what it monitors, what it detects, why it matters, stack
 3. Why data quality matters: one short fictional (Aisha) block
 4. The data: Patient / Encounter / Observation in plain language, one FHIR sentence

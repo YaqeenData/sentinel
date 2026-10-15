@@ -47,9 +47,9 @@ export function HomePage() {
           </div>
           <span className="eyebrow story-eyebrow">Sentinel</span>
           <h1>
-            The pipeline can be green
+            The pipeline is green…
             <br />
-            <span className="rd-accent">while the data is wrong.</span>
+            <span className="rd-accent">but is the data healthy?</span>
           </h1>
           <p>
             Sentinel monitors streaming healthcare data for quality problems that can stay invisible while the
@@ -363,9 +363,9 @@ export function HomePage() {
         <div className="section-wrap">
           <Reveal className="rd-final-inner">
             <h2>
-              The pipeline can be green
+              The pipeline is green…
               <br />
-              <span className="rd-accent">while the data is wrong.</span>
+              <span className="rd-accent">but is the data healthy?</span>
             </h2>
             <div className="story-actions">
               <a className="button primary" href="#demo">Watch Demo</a>

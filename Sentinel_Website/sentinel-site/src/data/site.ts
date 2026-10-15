@@ -9,7 +9,7 @@ export const asset = (path: string) => `${import.meta.env.BASE_URL}assets/${path
 
 export const siteConfig = {
   projectName: 'Sentinel',
-  tagline: 'The pipeline can be green while the data is wrong.',
+  tagline: 'The pipeline is green… but is the data healthy?',
   description:
     'Sentinel monitors streaming healthcare data for quality problems that can stay invisible while the pipeline, database and dashboards keep working. A controlled prototype on synthetic data.',
   year: '2026',
