@@ -1,10 +1,7 @@
 /**
  * Central project links and site-wide config.
  * Change a URL here and the whole site follows. Never paste these URLs into components.
- *
- * The ngrok URL is temporary and may change: update LIVE_DEMO_URL in this one place.
  */
-export const LIVE_DEMO_URL = 'https://tamer-manlike-skeleton.ngrok-free.dev/?page=overview';
 export const REPOSITORY_URL = 'https://github.com/yaqeendata/sentinel';
 
 /** Resolve a file under public/assets/ so it works with the Vite base path (GitHub Pages). */
@@ -16,7 +13,6 @@ export const siteConfig = {
   description:
     'Sentinel monitors streaming healthcare data for quality problems that can stay invisible while the pipeline, database and dashboards keep working. A controlled prototype on synthetic data.',
   year: '2026',
-  liveDemoUrl: LIVE_DEMO_URL,
   repositoryUrl: REPOSITORY_URL,
   demoVideo: {
     src: 'demo/sentinel-product-demo.mp4',

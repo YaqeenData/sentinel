@@ -2,7 +2,6 @@ import {ArrowDown, ArrowRight, Check, ExternalLink} from 'lucide-react';
 import {Link} from 'react-router-dom';
 import {ArchitectureFigure} from '../components/ArchitectureFigure';
 import {DemoVideo} from '../components/DemoVideo';
-import {LiveDemoLink} from '../components/LiveDemoLink';
 import {ProductJourney} from '../components/ProductJourney';
 import {Reveal} from '../components/Reveal';
 import {Shot} from '../components/Shot';
@@ -58,7 +57,6 @@ export function HomePage() {
           </p>
           <div className="story-actions">
             <a className="button primary" href="#demo">Watch Demo <ArrowDown size={16} aria-hidden="true" /></a>
-            <LiveDemoLink variant="secondary">Open Live Demo</LiveDemoLink>
             <GitHubLink>View GitHub</GitHubLink>
           </div>
         </Reveal>
@@ -242,8 +240,7 @@ export function HomePage() {
           <Reveal className="rd-demo-stage" delay={80}>
             <DemoVideo />
             <div className="story-actions rd-left">
-              <LiveDemoLink>Open Live Demo</LiveDemoLink>
-              <Link className="button ghost" to="/demo">More from the demo <ArrowRight size={16} aria-hidden="true" /></Link>
+              <Link className="button secondary" to="/demo">More from the demo <ArrowRight size={16} aria-hidden="true" /></Link>
             </div>
           </Reveal>
         </div>
@@ -371,9 +368,8 @@ export function HomePage() {
               <span className="rd-accent">while the data is wrong.</span>
             </h2>
             <div className="story-actions">
-              <LiveDemoLink>Open Live Demo</LiveDemoLink>
+              <a className="button primary" href="#demo">Watch Demo</a>
               <GitHubLink variant="secondary">View GitHub</GitHubLink>
-              <a className="button ghost" href="#demo">Watch Demo</a>
             </div>
           </Reveal>
         </div>
