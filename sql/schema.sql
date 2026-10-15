@@ -6,9 +6,9 @@ CREATE TABLE IF NOT EXISTS resources (
     resource_type  TEXT NOT NULL UNIQUE
 );
 
--- v1 starts with Observation. Add Encounter / Patient here later.
+-- Monitored FHIR resource types (the monitor writes metrics for all three).
 INSERT INTO resources (resource_type)
-VALUES ('Observation'), ('Patient')
+VALUES ('Observation'), ('Patient'), ('Encounter')
 ON CONFLICT (resource_type) DO NOTHING;
 
 

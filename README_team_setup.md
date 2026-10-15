@@ -1,3 +1,5 @@
+> **Note:** these are early team notes from the first sprints and some details are out of date. For the current setup, see the [root README](README.md).
+
 # Sentinel
 
 **Sentinel** is a real-time data health monitoring project for healthcare data streams.
