@@ -1,15 +1,21 @@
 # Sentinel Sample Data
 
-This directory contains a small, referentially coherent subset of synthetic FHIR data used by Sentinel.
+A small set of **synthetic** FHIR resources generated with [Synthea](https://github.com/synthetichealth/synthea). It does not contain real patient information.
 
-## Included resources
+| File | Resources | What a record is |
+| --- | --- | --- |
+| `Patient.ndjson` | 5 | A person |
+| `Encounter.ndjson` | 25 | A visit or healthcare interaction |
+| `Observation.ndjson` | 39 | A measurement, assessment or recorded fact |
 
-- 5 Patient resources
-- 25 Encounter resources
-- 39 Observation resources
+Each line is one FHIR resource as JSON (NDJSON).
 
-All Encounter and Observation references resolve to resources included in this sample.
+## How the files relate
 
-The data was generated using Synthea and does not contain real patient information.
+The sample is referentially coherent: every Encounter refers to one of the Patients, and every Observation refers to one of the Patients and one of the Encounters. These counts and references were checked against the files.
 
-The full replay dataset is excluded from Git because it is generated locally and is several gigabytes in size.
+## Why it is included
+
+It lets you look at what Sentinel's input data looks like without running Synthea or connecting to Google Cloud. It is for exploration and examples; the automated tests and the monitor do not read it.
+
+The data Sentinel actually streams is generated fresh by Synthea at run time (into `data/replay/`, which Git ignores), and the much larger historical dataset used for baselines is not stored in this repository.
