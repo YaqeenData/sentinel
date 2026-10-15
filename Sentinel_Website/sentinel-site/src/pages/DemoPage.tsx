@@ -1,7 +1,6 @@
 import {ArrowRight} from 'lucide-react';
 import {Link} from 'react-router-dom';
 import {DemoVideo} from '../components/DemoVideo';
-import {LiveDemoLink} from '../components/LiveDemoLink';
 import {SectionHeading} from '../components/SectionHeading';
 import {Shot} from '../components/Shot';
 
@@ -17,8 +16,7 @@ export function DemoPage() {
       <section className="section-wrap demo-feature">
         <DemoVideo />
         <div className="demo-actions">
-          <LiveDemoLink>Open Live Demo</LiveDemoLink>
-          <Link className="button secondary" to="/">Read the story <ArrowRight size={16} aria-hidden="true" /></Link>
+          <Link className="button primary" to="/">Read the story <ArrowRight size={16} aria-hidden="true" /></Link>
         </div>
         <p className="rd-quiet rd-left">Dark and light modes supported. The demo uses synthetic data; Sentinel monitors data health, not patient health.</p>
       </section>

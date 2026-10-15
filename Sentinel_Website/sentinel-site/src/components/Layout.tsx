@@ -1,4 +1,4 @@
-import {ExternalLink, Menu, X} from 'lucide-react';
+import {Menu, X} from 'lucide-react';
 import {useState} from 'react';
 import {NavLink, Outlet} from 'react-router-dom';
 import {siteConfig} from '../data/site';
@@ -35,9 +35,6 @@ export function Layout() {
               {label}
             </NavLink>
           ))}
-          <a className="nav-cta" href={siteConfig.liveDemoUrl} target="_blank" rel="noopener noreferrer">
-            Live Demo <ExternalLink size={15} aria-hidden="true" />
-          </a>
           <ThemeToggle />
         </nav>
       </header>
