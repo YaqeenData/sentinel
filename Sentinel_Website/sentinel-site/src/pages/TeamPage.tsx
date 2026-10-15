@@ -1,6 +1,6 @@
 import { ExternalLink } from 'lucide-react';
 import { SectionHeading } from '../components/SectionHeading';
-import { team } from '../data/site';
+import { team, teamNote } from '../data/site';
 
 export function TeamPage() {
   return (
@@ -10,10 +10,7 @@ export function TeamPage() {
 
         <h1>Four data engineers behind Sentinel.</h1>
 
-        <p>
-          Meet the team behind Sentinel and the areas each member contributed
-          to throughout the project.
-        </p>
+        <p>A four-person Data Engineering capstone.</p>
       </section>
 
       <section className="section-wrap section-block">
@@ -37,13 +34,15 @@ export function TeamPage() {
 
               <strong>{member.role}</strong>
 
+              <p className="rf-contrib">{member.contribution}</p>
+
               {(member.linkedin || member.portfolio) && (
                 <div className="member-links">
                   {member.linkedin && (
                     <a
                       href={member.linkedin}
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                     >
                       LinkedIn
                       <ExternalLink size={13} />
@@ -54,7 +53,7 @@ export function TeamPage() {
                     <a
                       href={member.portfolio}
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                     >
                       Portfolio
                       <ExternalLink size={13} />
@@ -65,6 +64,7 @@ export function TeamPage() {
             </article>
           ))}
         </div>
+        <p className="rd-quiet rd-left">{teamNote}</p>
       </section>
     </div>
   );

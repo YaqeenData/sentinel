@@ -1,333 +1,380 @@
-import type {CSSProperties} from 'react';
-import {
-  ArrowDown,
-  ArrowRight,
-  Check,
-  CircleAlert,
-  Database,
-  GitBranch,
-  HeartPulse,
-  ShieldCheck,
-  Waves,
-} from 'lucide-react';
+import {ArrowDown, ArrowRight, Check, ExternalLink} from 'lucide-react';
 import {Link} from 'react-router-dom';
-import {CountUp} from '../components/CountUp';
+import {ArchitectureFigure} from '../components/ArchitectureFigure';
+import {DemoVideo} from '../components/DemoVideo';
+import {LiveDemoLink} from '../components/LiveDemoLink';
+import {ProductJourney} from '../components/ProductJourney';
 import {Reveal} from '../components/Reveal';
-import {detectors, resources, siteConfig, team} from '../data/site';
+import {Shot} from '../components/Shot';
+import {
+  aisha,
+  architectureNotes,
+  checks,
+  downstream,
+  engineeringDetails,
+  fhirLine,
+  healthStatement,
+  prototypeStatement,
+  resourcesPlain,
+  results,
+  scopeNext,
+  scopeToday,
+  securityVsQuality,
+  snapshot,
+  values,
+  withSentinel,
+  without,
+} from '../data/content';
+import {siteConfig, team, teamNote} from '../data/site';
 
-const detectorIcons = [ShieldCheck, HeartPulse, Waves, GitBranch, Database];
-
-const ownership = [
-  ['BI', 'The dashboard is working.'],
-  ['Analytics', 'The query did not change.'],
-  ['Data Engineering', 'The pipeline succeeded.'],
-  ['Source System', 'The API returned 200.'],
-] as const;
+function GitHubLink({variant = 'ghost', children = 'View GitHub'}: {variant?: 'ghost' | 'secondary'; children?: string}) {
+  return (
+    <a className={`button ${variant}`} href={siteConfig.repositoryUrl} target="_blank" rel="noopener noreferrer">
+      {children} <ExternalLink size={14} aria-hidden="true" />
+    </a>
+  );
+}
 
 export function HomePage() {
   return (
     <>
-      <section className="story-hero section-wrap">
+      {/* HERO */}
+      <section className="story-hero rd-hero section-wrap" id="top">
         <Reveal className="story-hero-inner">
           <div className="story-logo-wrap" aria-hidden="true">
             <span className="story-logo-halo story-logo-halo-a" />
             <span className="story-logo-halo story-logo-halo-b" />
             <img src="./assets/brand/sentinel-logo.svg" alt="" />
           </div>
-          <span className="eyebrow story-eyebrow">Healthcare-aware data observability</span>
-          <h1>{siteConfig.tagline}</h1>
-          <p>{siteConfig.description}</p>
+          <span className="eyebrow story-eyebrow">Sentinel</span>
+          <h1>
+            The pipeline can be green
+            <br />
+            <span className="rd-accent">while the data is wrong.</span>
+          </h1>
+          <p>
+            Sentinel monitors streaming healthcare data for quality problems that can stay invisible while the
+            pipeline, database and dashboards keep working.
+          </p>
           <div className="story-actions">
-            <Link className="button primary" to="/demo">See the demo <ArrowRight size={16} /></Link>
-            <Link className="button ghost" to="/case-study">Read the case study</Link>
+            <a className="button primary" href="#demo">Watch Demo <ArrowDown size={16} aria-hidden="true" /></a>
+            <LiveDemoLink variant="secondary">Open Live Demo</LiveDemoLink>
+            <GitHubLink>View GitHub</GitHubLink>
           </div>
-          <a className="scroll-cue" href="#gap" aria-label="Scroll to the problem">
-            <span>Scroll to explore</span>
-            <ArrowDown size={15} />
-          </a>
+        </Reveal>
+        <Reveal className="rd-hero-shot" delay={120}>
+          <Shot
+            file="sentinel-healthy"
+            alt="Sentinel overview dashboard showing healthy Patient, Observation, and Encounter resources."
+            state="Healthy"
+            tone="healthy"
+            eager
+          />
         </Reveal>
       </section>
 
-      <section className="story-section story-gap" id="gap">
-        <div className="section-wrap">
-          <Reveal>
-            <div className="story-kicker">01 · The gap</div>
-            <h2>Everything can be working.</h2>
-            <p className="story-lead">A successful pipeline proves that data moved. It does not prove that the data arriving downstream is still healthy.</p>
-          </Reveal>
-
-          <Reveal className="pipeline-stage" delay={80}>
-            <div className="pipeline-track" aria-label="Healthy pipeline animation">
-              <span className="pipeline-beam" />
-              {['Source', 'Kafka', 'Pipeline', 'Database'].map((item, index) => (
-                <div className="pipeline-node" key={item} style={{'--node-delay': `${index * 160}ms`} as CSSProperties}>
-                  <span>{item}</span>
-                  <Check size={14} />
-                </div>
-              ))}
-              <span className="pipeline-pulse" />
-            </div>
-            <div className="pipeline-caption"><span className="live-dot" /> Infrastructure healthy</div>
-          </Reveal>
-
-          <div className="signal-shifts">
-            <Reveal className="signal-shift" delay={0}>
-              <span>Missing values</span>
-              <strong>0% <b>→</b> 30%</strong>
-              <div className="mini-track"><i style={{width: '30%'}} /></div>
-            </Reveal>
-            <Reveal className="signal-shift" delay={100}>
-              <span>Volume</span>
-              <strong>10,580 <b>→</b> 2,600</strong>
-              <div className="mini-track danger"><i style={{width: '25%'}} /></div>
-            </Reveal>
-            <Reveal className="signal-shift" delay={200}>
-              <span>Heart Rate</span>
-              <strong>Distribution shifted</strong>
-              <div className="sparkline" aria-hidden="true"><i /><i /><i /><i /><i /><i /><i /></div>
-            </Reveal>
+      {/* EXECUTIVE SNAPSHOT */}
+      <section className="rf-snapshot section-wrap" aria-label="Sentinel at a glance">
+        <dl>
+          <div>
+            <dt>What is it</dt>
+            <dd>{snapshot.what}</dd>
           </div>
+          <div>
+            <dt>What it monitors</dt>
+            <dd>{snapshot.monitors.join(' · ')}</dd>
+          </div>
+          <div>
+            <dt>What it detects</dt>
+            <dd>{snapshot.detects.join(' · ')}</dd>
+          </div>
+          <div>
+            <dt>Why it matters</dt>
+            <dd>{snapshot.why}</dd>
+          </div>
+        </dl>
+        <ul className="rf-stack" aria-label="Technology stack">
+          {snapshot.stack.map((s) => <li key={s}>{s}</li>)}
+        </ul>
+      </section>
 
-          <Reveal className="story-impact" delay={120}>
-            <span>The systems are green.</span>
-            <strong>The data is not.</strong>
+      {/* WHY DATA QUALITY MATTERS */}
+      <section className="story-section rd-section" id="why">
+        <div className="section-wrap rf-narrow">
+          <Reveal>
+            <div className="story-kicker">Why data quality matters</div>
+            <h2>A system can stay up while the information inside it is wrong.</h2>
+          </Reveal>
+          <Reveal className="rf-aisha" delay={60}>
+            <span className="rf-flag">{aisha.label}</span>
+            <p>{aisha.text}</p>
+            <ol className="rf-chain" aria-label="What happens in the scenario">
+              {aisha.chain.map((step) => <li key={step}>{step}</li>)}
+            </ol>
+            <p className="rf-muted">{aisha.point}</p>
+          </Reveal>
+          <Reveal delay={80}>
+            <p className="rf-pull">{aisha.takeaway}</p>
           </Reveal>
         </div>
       </section>
 
-      <section className="story-section story-ownership">
-        <div className="section-wrap ownership-layout">
-          <Reveal className="ownership-heading">
-            <div className="story-kicker">02 · Ownership</div>
-            <h2>So who notices when the data itself changes?</h2>
-            <p className="story-lead">A data-quality issue can sit between areas of responsibility even when every team is correct about its own component.</p>
+      {/* WHAT HEALTHCARE DATA */}
+      <section className="story-section rd-section" id="data">
+        <div className="section-wrap">
+          <Reveal>
+            <div className="story-kicker">The data</div>
+            <h2>Three kinds of healthcare data.</h2>
           </Reveal>
-
-          <div className="ownership-lines">
-            {ownership.map(([team, quote], index) => (
-              <Reveal className="ownership-line" delay={index * 80} key={team}>
-                <span>{team}</span>
-                <p>“{quote}”</p>
-                <Check size={16} />
+          <div className="rf-trio-plain">
+            {resourcesPlain.map((r, i) => (
+              <Reveal key={r.name} delay={i * 60}>
+                <div className="rf-plain">
+                  <strong>{r.name}</strong>
+                  <p className="rf-q">{r.question}</p>
+                  <p className="rf-muted">{r.note}</p>
+                </div>
               </Reveal>
             ))}
           </div>
-
-          <Reveal className="ownership-answer">
-            <span>That gap is where</span>
-            <strong>Sentinel watches.</strong>
+          <Reveal delay={80}>
+            <p className="story-lead rf-fhir">{fhirLine}</p>
           </Reveal>
         </div>
       </section>
 
-      <section className="story-section story-detectors">
+      {/* SECURITY IS NOT DATA QUALITY */}
+      <section className="story-section rd-section">
         <div className="section-wrap">
           <Reveal>
-            <div className="story-kicker">03 · What Sentinel watches</div>
-            <h2>Five questions. One view of data health.</h2>
-            <p className="story-lead">The technical method changes with the failure mode. The question stays human-readable.</p>
+            <div className="story-kicker">Two different jobs</div>
+            <h2>Security is not data quality.</h2>
           </Reveal>
-
-          <div className="detector-story-list">
-            {detectors.map((detector, index) => {
-              const Icon = detectorIcons[index];
-              return (
-                <Reveal className="detector-story" key={detector.name} delay={index * 40}>
-                  <div className="detector-story-index">{String(index + 1).padStart(2, '0')}</div>
-                  <div className="detector-story-copy">
-                    <div className="detector-story-name"><Icon size={20} /> {detector.name}</div>
-                    <h3>{detector.question}</h3>
-                    <p>{detector.detail}</p>
-                  </div>
-                  <div className={`detector-viz detector-viz-${index + 1}`} aria-hidden="true">
-                    {index === 4 ? (
-                      <div className="volume-viz-content">
-                        <div className="volume-viz-group">
-                          <div className="volume-viz-bars expected">
-                            <span /><span /><span />
-                          </div>
-                          <small>~10,580 expected</small>
-                        </div>
-                        <div className="volume-viz-drop">
-                          <strong>↓ 75%</strong>
-                          <span>drop</span>
-                        </div>
-                        <div className="volume-viz-group">
-                          <div className="volume-viz-bars observed">
-                            <span /><span /><span />
-                          </div>
-                          <small>~2,600 observed</small>
-                        </div>
-                      </div>
-                    ) : (
-                      <><span /><span /><span /><span /><span /></>
-                    )}
-                  </div>
-                </Reveal>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      <section className="story-section story-resources">
-        <div className="section-wrap">
-          <Reveal>
-            <div className="story-kicker">04 · FHIR-aware</div>
-            <h2>Not anonymous JSON. Resources with meaning.</h2>
-            <p className="story-lead">Patient, Encounter, and Observation have different notions of healthy behavior. Sentinel keeps the detector logic reusable while the monitoring policy stays resource-aware.</p>
-          </Reveal>
-
-          <Reveal className="resource-orbit" delay={90}>
-            <div className="resource-center">
-              <span>FHIR</span>
-              <strong>Data Health</strong>
-            </div>
-            <svg className="resource-lines" viewBox="0 0 900 260" role="presentation" aria-hidden="true">
-              <path d="M450 130 C330 130 315 62 205 62" />
-              <path d="M450 130 C450 130 450 62 450 62" />
-              <path d="M450 130 C570 130 585 62 695 62" />
-            </svg>
-            <div className="resource-row">
-              {resources.map((resource, index) => (
-                <article className="resource-story-card" key={resource.name} style={{'--resource-delay': `${index * 140}ms`} as CSSProperties}>
-                  <span>0{index + 1}</span>
-                  <h3>{resource.name}</h3>
-                  <p>{resource.description}</p>
-                </article>
-              ))}
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      <section className="story-section story-architecture">
-        <div className="section-wrap">
-          <Reveal>
-            <div className="story-kicker">05 · How it works</div>
-            <h2>Historical behavior defines healthy. Live windows test whether it still holds.</h2>
-          </Reveal>
-
-          <Reveal className="architecture-story" delay={90}>
-            <div className="architecture-story-lane">
-              <span className="architecture-story-label">Historical</span>
-              <div className="architecture-story-track">
-                {['Synthea / FHIR', 'Bronze', 'Silver', 'GCS', 'Healthy reference'].map((node, index) => (
-                  <div className="architecture-story-node" key={node}>
-                    <span>{node}</span>{index < 4 ? <b>→</b> : null}
-                  </div>
-                ))}
-                <i className="architecture-particle historical" />
-              </div>
-            </div>
-            <div className="architecture-story-join">↓</div>
-            <div className="architecture-story-lane live">
-              <span className="architecture-story-label">Live</span>
-              <div className="architecture-story-track">
-                {['FHIR replay', 'Kafka', '60-sec windows', 'Detectors', 'PostgreSQL', 'Dashboard'].map((node, index) => (
-                  <div className="architecture-story-node" key={node}>
-                    <span>{node}</span>{index < 5 ? <b>→</b> : null}
-                  </div>
-                ))}
-                <i className="architecture-particle live" />
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      <section className="story-section story-proof">
-        <div className="section-wrap">
-          <Reveal>
-            <div className="story-kicker">06 · Controlled proof</div>
-            <h2>We did not wait for the data to fail. We broke it ourselves.</h2>
-            <p className="story-lead">The infrastructure stayed alive while a controlled volume injection pushed the incoming stream far outside its healthy reference.</p>
-          </Reveal>
-
-          <div className="proof-story-grid">
-            <Reveal className="proof-number healthy" delay={50}>
-              <span>Expected</span>
-              <strong><CountUp to={10580} /></strong>
-              <small>records / window</small>
+          <div className="rf-vs">
+            <Reveal className="rf-vs-col">
+              <span className="rd-col-label">{securityVsQuality.security.label}</span>
+              <p className="rf-vs-ask">{securityVsQuality.security.asks}</p>
+              <ul>{securityVsQuality.security.items.map((i) => <li key={i}>{i}</li>)}</ul>
             </Reveal>
-            <Reveal className="proof-collapse" delay={150}>
-              <div className="collapse-line"><i /></div>
-              <span>controlled injection</span>
-              <b>▼ ~75%</b>
-            </Reveal>
-            <Reveal className="proof-number incident" delay={250}>
-              <span>Observed</span>
-              <strong><CountUp from={10580} to={2600} /></strong>
-              <small>records / window</small>
+            <Reveal className="rf-vs-col quality" delay={100}>
+              <span className="rd-col-label">{securityVsQuality.quality.label}</span>
+              <p className="rf-vs-ask">{securityVsQuality.quality.asks}</p>
+              <ul>{securityVsQuality.quality.items.map((i) => <li key={i}>{i}</li>)}</ul>
             </Reveal>
           </div>
-
-          <Reveal className="incident-story" delay={180}>
-            <div>
-              <CircleAlert size={19} />
-              <span>VOLUME DROP</span>
-            </div>
-            <strong>Incident opened</strong>
-            <p>Kafka kept running. The consumer stayed alive. Sentinel still detected the problem.</p>
-          </Reveal>
-
-          <Reveal className="recovery-story" delay={220}>
-            <span>Healthy</span><b>→</b><span>Failure injected</span><b>→</b><span>Detected</span><b>→</b><span>Incident</span><b>→</b><span className="recovered">Recovered</span>
+          <Reveal delay={80}>
+            <p className="rf-pull">
+              {securityVsQuality.takeaway[0]}
+              <br />
+              <span className="rd-accent">{securityVsQuality.takeaway[1]}</span>
+            </p>
           </Reveal>
         </div>
       </section>
 
-      <section className="story-section story-demo">
-        <div className="section-wrap demo-story-layout">
-          <Reveal className="demo-story-copy">
-            <div className="story-kicker">07 · See it in action</div>
-            <h2>The dashboard is evidence, not the whole project.</h2>
-            <p className="story-lead">Use the final recording to show healthy data, controlled failure, detection, incident context, and recovery in one short sequence.</p>
-            <div className="story-actions">
-              <Link className="button primary" to="/demo">Open demo page <ArrowRight size={16} /></Link>
-              <Link className="button ghost" to="/case-study">Engineering case study</Link>
-            </div>
-          </Reveal>
-
-          <Reveal className="demo-window" delay={100}>
-            <div className="demo-window-bar"><i /><i /><i /><span>Sentinel · Live Dashboard</span></div>
-            <div className="demo-window-content">
-              <img src="./assets/brand/sentinel-logo.svg" alt="" />
-              <span>DEMO PLACEHOLDER</span>
-              <strong>Healthy → Inject → Detect → Recover</strong>
-              <small>Replace with the final Sentinel dashboard recording.</small>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      <section className="story-section story-case-study">
-        <div className="section-wrap case-study-tease">
+      {/* WHY THE BUSINESS CARES */}
+      <section className="story-section rd-section" id="business">
+        <div className="section-wrap">
           <Reveal>
-            <div className="story-kicker">08 · The engineering behind it</div>
-            <h2>Architecture, baselines, detectors, failures, trade-offs.</h2>
-            <p className="story-lead">The case study documents what we built, why we chose it, what went wrong, how we tested it, and what we would change in production.</p>
+            <div className="story-kicker">Why the business cares</div>
+            <h2>{downstream.lead}</h2>
+            <p className="story-lead">{downstream.note}</p>
           </Reveal>
-          <Reveal delay={100}>
-            <Link className="case-study-link" to="/case-study">Read the full case study <ArrowRight size={19} /></Link>
-          </Reveal>
-        </div>
-      </section>
-
-      <section className="story-section story-team-preview">
-        <div className="section-wrap team-preview-layout">
-          <Reveal>
-            <div className="story-kicker">09 · Built together</div>
-            <h2>Four data engineers. One question worth investigating.</h2>
-            <p className="story-lead">Exploring what it takes to make streaming data trustworthy.</p>
-            <Link className="case-study-link" to="/team">Meet the team <ArrowRight size={19} /></Link>
-          </Reveal>
-          <Reveal className="team-preview-grid" delay={120}>
-            {team.map((member) => (
-              <span key={member.name} >
-                {member.name}
-              </span>
+          <ul className="rf-uses">
+            {downstream.uses.map((u, i) => (
+              <Reveal key={u.name} delay={i * 50}>
+                <li>
+                  <strong>{u.name}</strong>
+                  <span>{u.text}</span>
+                </li>
+              </Reveal>
             ))}
+          </ul>
+          <Reveal delay={60}>
+            <p className="rf-pull">{downstream.closing}</p>
+          </Reveal>
+
+          <div className="rd-compare rf-compare">
+            <Reveal className="rd-flow without">
+              <span className="rd-flow-label">Without Sentinel</span>
+              <ol>{without.map((s) => <li key={s}>{s}</li>)}</ol>
+            </Reveal>
+            <Reveal className="rd-flow with" delay={100}>
+              <span className="rd-flow-label">With Sentinel</span>
+              <ol>{withSentinel.map((s) => <li key={s}>{s}</li>)}</ol>
+            </Reveal>
+          </div>
+
+          <Reveal delay={60}>
+            <dl className="rf-values">
+              {values.map((v) => (
+                <div key={v.name}>
+                  <dt>{v.name}</dt>
+                  <dd>{v.text}</dd>
+                </div>
+              ))}
+            </dl>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* SENTINEL IN ACTION */}
+      <section className="story-section rd-section rd-demo" id="action">
+        <div className="section-wrap">
+          <Reveal>
+            <div className="story-kicker">Sentinel in action</div>
+            <h2>Monitor. Detect. Investigate. Track.</h2>
+            <p className="story-lead">The real dashboard, following one volume drop from start to finish.</p>
+          </Reveal>
+          <Reveal delay={60}>
+            <ProductJourney />
+          </Reveal>
+        </div>
+      </section>
+
+      <section className="story-section rd-section rd-demo rf-video" id="demo">
+        <div className="section-wrap">
+          <Reveal>
+            <div className="story-kicker">Demo</div>
+            <h2>See Sentinel in action</h2>
+            <p className="story-lead">From healthy monitoring to detection, investigation and recovery.</p>
+          </Reveal>
+          <Reveal className="rd-demo-stage" delay={80}>
+            <DemoVideo />
+            <div className="story-actions rd-left">
+              <LiveDemoLink>Open Live Demo</LiveDemoLink>
+              <Link className="button ghost" to="/demo">More from the demo <ArrowRight size={16} aria-hidden="true" /></Link>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* WHAT SENTINEL CHECKS */}
+      <section className="story-section rd-section" id="checks">
+        <div className="section-wrap">
+          <Reveal>
+            <div className="story-kicker">What Sentinel checks</div>
+            <h2>Five questions about the data.</h2>
+          </Reveal>
+          <ol className="rf-checks">
+            {checks.map((c, i) => (
+              <Reveal key={c.name} delay={(i % 3) * 40}>
+                <li>
+                  <span className="rf-check-name">{c.name}</span>
+                  <h3>{c.question}</h3>
+                  <p>{c.examples}</p>
+                  <details className="rf-tech">
+                    <summary>Technical details</summary>
+                    <p>{c.technical}</p>
+                  </details>
+                </li>
+              </Reveal>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* ENGINEERING */}
+      <section className="story-section rd-section story-architecture" id="architecture">
+        <div className="section-wrap">
+          <Reveal>
+            <div className="story-kicker">How it is engineered</div>
+            <h2>Live data, judged against a historical reference.</h2>
+          </Reveal>
+          <Reveal delay={60}>
+            <ArchitectureFigure />
+          </Reveal>
+          <div className="rf-notes">
+            {architectureNotes.map((n, i) => (
+              <Reveal key={i} delay={i * 50}><p>{n}</p></Reveal>
+            ))}
+          </div>
+          <Reveal delay={60}>
+            <details className="rf-eng">
+              <summary>Engineering details</summary>
+              <dl>
+                {engineeringDetails.map(([t, d]) => (
+                  <div key={t}>
+                    <dt>{t}</dt>
+                    <dd>{d}</dd>
+                  </div>
+                ))}
+              </dl>
+              <p className="rf-results"><strong>{results.line}</strong> {results.note}</p>
+              <Link className="case-study-link" to="/case-study">Read the engineering deep dive <ArrowRight size={18} aria-hidden="true" /></Link>
+            </details>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* SCOPE */}
+      <section className="story-section rd-section rd-scope" id="scope">
+        <div className="section-wrap">
+          <Reveal>
+            <div className="story-kicker">Scope</div>
+            <h2>What exists today, and what comes next.</h2>
+          </Reveal>
+          <Reveal className="rd-statement" delay={60}>
+            <strong>{prototypeStatement}</strong>
+            <span>{healthStatement}</span>
+          </Reveal>
+          <div className="rd-scope-grid">
+            <Reveal className="rd-scope-col today">
+              <span className="rd-col-label">Today</span>
+              <ul>{scopeToday.map((s) => <li key={s}><Check size={15} aria-hidden="true" /> {s}</li>)}</ul>
+            </Reveal>
+            <Reveal className="rd-scope-col next" delay={100}>
+              <span className="rd-col-label">Next</span>
+              <ul>{scopeNext.map((s) => <li key={s}><ArrowRight size={15} aria-hidden="true" /> {s}</li>)}</ul>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      {/* TEAM */}
+      <section className="story-section rd-section story-team-preview" id="team">
+        <div className="section-wrap">
+          <Reveal>
+            <div className="story-kicker">Team</div>
+            <h2 className="rd-h2-small">Four data engineers, one capstone.</h2>
+          </Reveal>
+          <div className="rd-team" role="list">
+            {team.map((m, i) => (
+              <Reveal className="rd-member" delay={i * 60} key={m.name}>
+                <div role="listitem">
+                  <strong>{m.name}</strong>
+                  <span>{m.role}</span>
+                  <p className="rf-contrib">{m.contribution}</p>
+                  <div className="rd-member-links">
+                    {m.linkedin ? (
+                      <a href={m.linkedin} target="_blank" rel="noopener noreferrer" aria-label={`${m.name} on LinkedIn`}>LinkedIn <ExternalLink size={12} aria-hidden="true" /></a>
+                    ) : null}
+                    {m.portfolio ? (
+                      <a href={m.portfolio} target="_blank" rel="noopener noreferrer" aria-label={`${m.name} portfolio`}>Portfolio <ExternalLink size={12} aria-hidden="true" /></a>
+                    ) : null}
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+          <p className="rd-quiet rd-left">{teamNote}</p>
+        </div>
+      </section>
+
+      {/* FINAL CTA */}
+      <section className="story-section rd-section rd-final">
+        <div className="section-wrap">
+          <Reveal className="rd-final-inner">
+            <h2>
+              The pipeline can be green
+              <br />
+              <span className="rd-accent">while the data is wrong.</span>
+            </h2>
+            <div className="story-actions">
+              <LiveDemoLink>Open Live Demo</LiveDemoLink>
+              <GitHubLink variant="secondary">View GitHub</GitHubLink>
+              <a className="button ghost" href="#demo">Watch Demo</a>
+            </div>
           </Reveal>
         </div>
       </section>
