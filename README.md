@@ -2,384 +2,244 @@
 
 **Real-time data health monitoring for streaming healthcare data.**
 
-> The pipeline can be green while the data is wrong.
+> **The pipeline can be green while the data is unhealthy.**
 
-Sentinel is a data engineering capstone that detects data-quality problems in real-time FHIR streams, even when the underlying pipeline continues to run successfully.
+Sentinel is a data-engineering prototype that watches a stream of synthetic FHIR healthcare data and flags data-quality problems that can stay invisible while the surrounding pipeline keeps running normally.
 
-It validates incoming records, profiles streaming windows, compares live behavior with healthy baselines, detects drift and anomalies, manages incidents in PostgreSQL, and surfaces data-health signals through a Streamlit dashboard.
+It currently monitors Patient, Encounter and Observation data and turns abnormal behavior into incidents that a data team can investigate.
 
 **Sentinel monitors data health — not patient health.**
 
-[View the Sentinel case study](https://yaqeendata.github.io/sentinel/)
+## Links
 
----
+- **Case study:** <https://yaqeendata.github.io/sentinel/>
+- **Live demo:** <https://tamer-manlike-skeleton.ngrok-free.dev/?page=overview> (a temporary ngrok endpoint, so it may change or be offline)
 
-## The Problem
+## Why Sentinel?
 
-Infrastructure monitoring can tell us whether a pipeline is running.
+Infrastructure monitoring tells us whether Kafka is running, a database is reachable, jobs succeed and dashboards load. All of that can look healthy while the data itself quietly becomes unhealthy:
 
-It does not necessarily tell us whether the data flowing through it is still trustworthy.
+- expected fields disappear
+- values become unexpectedly empty
+- fewer records arrive than expected
+- numbers start behaving differently
+- the mix of categories shifts
 
-A pipeline may remain completely operational while:
+Unhealthy data keeps flowing into dashboards, analytics, machine-learning systems and reports. Sentinel helps make those changes visible earlier, so a data team can investigate before the problem spreads.
 
-- required fields disappear,
-- null rates suddenly increase,
-- numeric distributions shift,
-- categorical distributions change,
-- record volume drops,
-- or upstream schemas change.
+## The healthcare data
 
-Nothing has to crash for bad data to reach downstream systems.
+FHIR is a standard used by healthcare systems to structure and exchange healthcare information. Sentinel monitors three FHIR resources:
 
-Sentinel explores one question:
+| Resource | In plain words |
+| --- | --- |
+| **Patient** | Who the person is |
+| **Encounter** | A visit or healthcare interaction |
+| **Observation** | A measurement, assessment, status or recorded clinical fact |
 
-> **The pipeline is green — but is the data healthy?**
+All healthcare data used by Sentinel is **synthetic**. It is generated with [Synthea](https://github.com/synthetichealth/synthea) and does not describe real people.
 
----
+## What Sentinel checks
+
+| Check | Question it answers |
+| --- | --- |
+| Contract Validation | Does the record still follow the expected rules? |
+| Missingness | Did information that is normally present disappear? |
+| Volume | Are we receiving the amount of data we expect? |
+| Numeric Drift | Did numeric values start behaving differently? |
+| Categorical Drift | Did the mix of categories unexpectedly change? |
+
+**Monitor → Detect → Investigate → Recover**
 
 ## Architecture
 
-Sentinel separates the live streaming path from the historical reference path, bringing both together in the detection engine to evaluate the health of incoming data.
+![Sentinel architecture: live streaming path and historical reference path](Sentinel_Website/sentinel-site/public/assets/architecture/sentinel-architecture-final.webp)
 
-<p align="center">
-  <img
-    src="assets/architecture/sentinel-architecture-16x9.dark.png"
-    alt="Sentinel system architecture showing the live FHIR streaming pipeline and historical baseline path"
-    width="100%"
-  />
-</p>
+Sentinel has two paths that meet in the detection engine.
 
-### Architecture Flow
+**Live path.** Synthea generates synthetic FHIR data, a Python producer publishes it to Apache Kafka, and Sentinel groups the stream into 60-second windows. The detection engine checks each window, writes metrics and incidents to PostgreSQL, and a Streamlit dashboard shows them.
 
-**Live monitoring**
+**Reference path.** Synthea also generated a historical set of synthetic FHIR data. Google Cloud Storage holds it (raw in Bronze, normalized in Silver), and it is profiled into a baseline of what healthy data looks like. The detection engine compares live windows against that baseline.
 
-`Synthea → HAPI FHIR → Python Producer → Apache Kafka → 60-Second Windows → Sentinel Detection Engine → PostgreSQL → Streamlit`
+Google Cloud only stores the historical data; Synthea is where it comes from. In this repository the producer reads Synthea's FHIR output files directly — no HAPI FHIR server is started or needed (see the [architecture notes](docs/architecture/README.md)).
 
-**Reference / baseline**
+More detail: [docs/architecture/README.md](docs/architecture/README.md)
 
-`Google Cloud → Baseline Profiling → Sentinel Detection Engine`
+## Getting started
 
-The live stream is evaluated in 60-second processing windows while historical healthy data provides the reference behavior used by Sentinel's drift and quality detectors.
+### Requirements
 
-### What Each Component Does
-
-| Component | Role |
+| Needed for | Requirement |
 | --- | --- |
-| **Synthea** | Generates realistic but fully synthetic healthcare data for testing and replay. |
-| **HAPI FHIR** | Hosts FHIR resources such as `Patient`, `Encounter`, and `Observation`. |
-| **Python Producer** | Reads FHIR resources and publishes them as streaming events. |
-| **Apache Kafka** | Provides the streaming backbone between data production and real-time monitoring. |
-| **60-Second Windows** | Groups live events into fixed processing windows for profiling and detection. |
-| **Google Cloud** | Stores historical, raw, and processed datasets used by the reference pipeline. |
-| **Baseline Profiling** | Builds the expected healthy behavior used for comparison with live data. |
-| **Sentinel Detection Engine** | Runs contract validation, missingness, numeric drift, categorical drift, and volume monitoring. |
-| **PostgreSQL** | Persists quality metrics, incidents, statuses, and monitoring history. |
-| **Streamlit** | Provides the internal data-observability dashboard for engineering teams. |
+| Everything | Python 3.12 and [Poetry](https://python-poetry.org/) |
+| Kafka and PostgreSQL | Docker with Docker Compose |
+| Live data stream | Java, and Synthea's `synthea-with-dependencies.jar` from the [Synthea releases](https://github.com/synthetichealth/synthea/releases) |
+| Rebuilding baselines only (optional) | Google Cloud credentials and access to the project's GCS bucket |
 
-> **Sentinel monitors data health, not patient health.**
+The local demo does **not** need Google Cloud: the baselines the monitor uses are already committed in `config/baselines.json`.
 
----
-
-## Detection Engine
-
-Sentinel currently monitors several classes of data-quality failure.
-
-| Detector | Purpose |
-| --- | --- |
-| **Contract Validation** | Detects missing required fields, invalid types, and structural violations |
-| **Missingness** | Detects unexpected increases in null values |
-| **Numeric Drift** | Detects changes in numeric distributions |
-| **Categorical Drift** | Detects changes in categorical distributions |
-| **Volume** | Detects abnormal changes in incoming record volume |
-
-### Numeric Drift
-
-Numeric drift uses a two-sample Kolmogorov-Smirnov test together with sample-size and effect-size safeguards.
-
-### Categorical Drift
-
-Categorical distributions are compared using Jensen-Shannon distance.
-
-### Volume Monitoring
-
-Volume detection compares the current window against historical behavior using robust statistics and percentage-based guardrails.
-
----
-
-## Controlled Failure Injection
-
-Sentinel includes controlled failure-injection utilities so detector behavior can be demonstrated and tested deliberately.
-
-Supported scenarios include:
-
-- contract violations,
-- missingness spikes,
-- numeric drift,
-- categorical drift,
-- volume anomalies,
-- and schema changes.
-
-This makes it possible to observe the complete lifecycle from healthy data to detection, incident creation, and recovery.
-
----
-
-## Tech Stack
-
-### Streaming & Processing
-
-- Python
-- Apache Kafka
-- Pandas
-- Polars
-- SciPy
-
-### Healthcare Data
-
-- FHIR
-- Synthea
-- HAPI FHIR
-
-### Cloud & Storage
-
-- Google Cloud
-- PostgreSQL
-- Parquet
-
-### Monitoring
-
-- Streamlit
-- Plotly
-
-### Engineering
-
-- Poetry
-- Pytest
-- Git
-- GitHub Actions
-
-### Case Study Website
-
-- React
-- TypeScript
-- Vite
-- GitHub Pages
-
----
-
-## Repository Structure
-
-```text
-sentinel/
-├── .github/
-│   └── workflows/
-│
-├── assets/
-│   └── architecture/
-│       ├── google-cloud.svg
-│       ├── hapi-fhir.png
-│       ├── kafka.svg
-│       ├── postgresql.svg
-│       ├── python.svg
-│       ├── sentinel-architecture.svg
-│       ├── streamlit.svg
-│       └── synthea.png
-│
-├── data/
-│   └── sample/
-│       ├── Patient.ndjson
-│       ├── Encounter.ndjson
-│       ├── Observation.ndjson
-│       └── README.md
-│
-├── docs/
-│   └── proposal/
-│       └── Sentinel Proposal.pptx
-│
-├── notebooks/
-│   └── 01_data_exploration.ipynb
-│
-├── scripts/
-│   ├── build_baselines.py
-│   ├── check_contract_gcs.py
-│   ├── check_contract_stream.py
-│   ├── replay_stream.py
-│   ├── run_experiment.py
-│   ├── run_monitor.py
-│   ├── run_scenario.py
-│   └── set_injection.py
-│
-├── src/
-│   └── sentinel/
-│       ├── baseline/
-│       ├── dashboard/
-│       ├── detection/
-│       ├── ingestion/
-│       ├── injection/
-│       ├── profiling/
-│       ├── storage/
-│       ├── streaming/
-│       └── transformation/
-│
-├── tests/
-│
-├── Sentinel_Website/
-│   └── sentinel-site/
-│
-├── .gitignore
-├── pyproject.toml
-├── poetry.lock
-└── README.md
-```
-
----
-
-## Sample Data
-
-A small synthetic FHIR dataset is included in:
-
-```text
-data/sample/
-```
-
-It contains:
-
-- 5 Patient resources
-- 25 Encounter resources
-- 39 Observation resources
-
-The sample is referentially coherent: included Encounter and Observation references resolve to resources contained in the sample.
-
-The full replay dataset is generated locally and excluded from Git because of its size.
-
-All healthcare records used by Sentinel are synthetic. They do not represent real patients.
-
----
-
-## Installation
-
-Sentinel uses **Python 3.12** and Poetry.
-
-Install the project dependencies:
+### 1. Clone and install
 
 ```bash
+git clone https://github.com/YaqeenData/sentinel.git
+cd sentinel
 poetry install
 ```
 
-Run the automated tests:
+### 2. Configure
 
 ```bash
-poetry run pytest -q
+cp .env.example .env
 ```
 
-The current test suite contains **54 passing tests**.
+Open `.env` and set at least:
 
----
+| Variable | What to put |
+| --- | --- |
+| `POSTGRES_PASSWORD` | Any local password (the default `change-me` also works locally) |
+| `SYNTHEA_JAR` | Absolute path to `synthea-with-dependencies.jar` |
 
-## Running Sentinel
+The other values in `.env.example` (`POSTGRES_*`, `KAFKA_*`, `REPLAY_RATE`, `SYNTHEA_POPULATION`) work as they are for a local demo. `GCP_PROJECT_ID` and `GCS_BUCKET` are only used by the Google Cloud workflow.
 
-### Start the Monitoring Engine
+`.env` is ignored by Git. Never commit it.
+
+### 3. Start Kafka and PostgreSQL
+
+```bash
+docker compose up -d
+docker compose ps
+```
+
+This starts Apache Kafka (port 9092) and PostgreSQL (host port 5433). The Kafka topic (`fhir-observations`) does not need to be created by hand.
+
+Create the Sentinel tables once:
+
+```bash
+docker compose exec -T postgres sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < sql/schema.sql
+```
+
+The tables are **not** created automatically, and the script is safe to run again.
+
+### 4. Baselines
+
+Nothing to do for the demo: `config/baselines.json` is already in the repository.
+
+To rebuild it from historical data in Google Cloud Storage (needs `GCP_PROJECT_ID`, `GCS_BUCKET` and `gcloud auth application-default login`):
+
+```bash
+poetry run python -m sentinel.baseline.builder
+```
+
+### 5. Start the monitor
 
 ```bash
 poetry run python scripts/run_monitor.py
 ```
 
-### Run a Controlled Experiment
+The monitor reads the Kafka stream, groups events into 60-second windows, runs the data-health checks, and writes metrics and incidents to PostgreSQL. Start it **before** the stream: by default it only reads messages that arrive after it starts.
+
+### 6. Start the data stream
+
+In a new terminal:
 
 ```bash
-poetry run python scripts/run_experiment.py
+poetry run python -m sentinel.streaming.replay
 ```
 
-### Launch the Dashboard
+This repeatedly generates a fresh batch of synthetic patients with Synthea and publishes their Patient, Encounter and Observation resources to Kafka. Stop it with `Ctrl+C`.
+
+### 7. Start the dashboard
+
+In a new terminal:
 
 ```bash
 poetry run streamlit run src/sentinel/dashboard/app.py
 ```
 
-Additional scripts for baseline generation, streaming replay, contract validation, scenarios, and failure injection are available under `scripts/`.
+Streamlit prints the local address (usually <http://localhost:8501>). The dashboard has Overview, Data Quality and Incidents pages and reads from PostgreSQL.
 
----
+### Startup order at a glance
 
-## Dashboard
+| Terminal | Command | Purpose |
+| --- | --- | --- |
+| 1 | `docker compose up -d`, then create tables once | Kafka and PostgreSQL |
+| 2 | `poetry run python scripts/run_monitor.py` | Detect and record incidents |
+| 3 | `poetry run python -m sentinel.streaming.replay` | Produce the live stream |
+| 4 | `poetry run streamlit run src/sentinel/dashboard/app.py` | Watch it |
+| 5 | `poetry run python scripts/set_injection.py ...` | Break the stream on purpose (next section) |
 
-The Streamlit dashboard is designed for data engineering and data-quality teams.
+Give the monitor a few minutes of healthy data before injecting a failure, so it has something healthy to compare against.
 
-It surfaces:
+## Run a controlled demo
 
-- data-quality incidents,
-- incident severity and status,
-- quality metrics,
-- baseline comparisons,
-- drift signals,
-- schema changes,
-- and streaming data health.
+Because the data is synthetic, Sentinel can break its own stream on purpose and show how it responds:
 
-The dashboard is an internal data-observability interface.
+Healthy stream → inject a known problem → Sentinel detects it → an incident opens → investigate → restore healthy data → the incident resolves
 
-It is **not a clinical monitoring system and does not monitor individual patient health**.
+With the monitor, stream and dashboard running, switch a failure on and off from another terminal:
 
----
+```bash
+poetry run python scripts/set_injection.py on volume
+poetry run python scripts/set_injection.py off volume
+```
+
+Every script and failure type is described in [docs/experiments/README.md](docs/experiments/README.md).
 
 ## Testing
-
-The automated test suite covers key parts of Sentinel, including:
-
-- contract validation,
-- missingness detection,
-- categorical drift,
-- volume drift,
-- controlled failure injection,
-- Observation transformations,
-- streaming profiles,
-- and window management.
-
-Run the complete suite with:
 
 ```bash
 poetry run pytest -q
 ```
 
-Current result:
+## Project structure
 
 ```text
-54 passed
+sentinel/
+├── config/              # Monitoring settings and committed baselines
+├── data/sample/         # Small synthetic FHIR sample
+├── docs/                # Architecture and experiment guides
+├── scripts/             # Monitor, experiment and injection commands
+├── sql/                 # PostgreSQL schema
+├── src/sentinel/        # Sentinel application code
+├── tests/               # Automated tests
+├── Sentinel_Website/    # Case-study website (React, Vite)
+├── docker-compose.yml   # Kafka and PostgreSQL
+├── pyproject.toml
+└── README.md
 ```
 
----
+## Tech stack
 
-## What Sentinel Demonstrates
+- **Streaming:** Python, Apache Kafka
+- **Healthcare data:** FHIR, Synthea
+- **Storage:** Google Cloud Storage, PostgreSQL, Parquet
+- **Monitoring:** Streamlit, Plotly
+- **Engineering:** Poetry, Pytest, Docker, GitHub Actions
+- **Website:** React, TypeScript, Vite, GitHub Pages
 
-Sentinel brings together several data engineering and data-observability concepts:
+## Current scope
 
-- real-time streaming ingestion,
-- FHIR data processing,
-- windowed stream processing,
-- data contracts,
-- statistical drift detection,
-- baseline engineering,
-- data-quality monitoring,
-- incident lifecycle management,
-- controlled failure injection,
-- PostgreSQL persistence,
-- automated testing,
-- and observability dashboards.
+Sentinel is a controlled prototype, not a production clinical system. Today it supports:
 
-The goal is not to replace infrastructure monitoring, but to complement it with visibility into the health of the data itself.
+- synthetic FHIR data: Patient, Encounter and Observation
+- five data-health check categories
+- historical reference behavior from a baseline
+- incident lifecycle: open, acknowledged, resolved
+- a Streamlit dashboard for data teams
 
----
+A real hospital deployment would need additional governance, security, domain validation, broader FHIR coverage and production operations.
 
 ## Team
 
-Sentinel was built by:
+| Name | Role | Links |
+| --- | --- | --- |
+| Yaqeen Alhalal | Team Lead & Data Engineer | [LinkedIn](https://www.linkedin.com/in/yaqeen-alhalal-8388541a3/) · [Portfolio](https://www.yaqeenalhalal.dev) |
+| Sama Alharbi | Data Engineer | [LinkedIn](https://www.linkedin.com/in/sama-a-831753201/) · [Portfolio](https://samaalharbi2.github.io/) |
+| Sarah Masshi | Data Engineer | [LinkedIn](https://www.linkedin.com/in/sarah-maashi-5baa26282) |
+| Rutanah Maghrabi | Data Engineer | [LinkedIn](https://www.linkedin.com/in/rutanah-maghrabi-22b3201b2) |
 
-- Yaqeen Alhalal
-- Sama Alharbi
-- Sarah Masshi
-- Rutanah Maghrabi
+## Case study
 
----
+For the full project story, architecture, product walkthrough, engineering decisions, limitations and production path, see the [Sentinel Case Study](https://yaqeendata.github.io/sentinel/).
 
-## Case Study
-
-For the complete project story, architecture, detector design, controlled experiments, engineering decisions, limitations, and reflections:
-
-**https://yaqeendata.github.io/sentinel/**
+**The pipeline can be green while the data is unhealthy.**
