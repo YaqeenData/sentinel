@@ -6,7 +6,7 @@ type Theme = 'light' | 'dark';
 const initialTheme = (): Theme => {
   const stored = localStorage.getItem('sentinel-theme') as Theme | null;
   if (stored === 'light' || stored === 'dark') return stored;
-  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  return 'dark'; // dark is the primary experience; light is opt-in via the toggle
 };
 
 export function ThemeToggle() {

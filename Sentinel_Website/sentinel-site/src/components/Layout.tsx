@@ -35,13 +35,9 @@ export function Layout() {
               {label}
             </NavLink>
           ))}
-          {siteConfig.liveDashboardUrl ? (
-            <a className="nav-cta" href={siteConfig.liveDashboardUrl} target="_blank" rel="noreferrer">
-              Live Dashboard <ExternalLink size={15} />
-            </a>
-          ) : (
-            <span className="nav-cta disabled">Live Dashboard · soon</span>
-          )}
+          <a className="nav-cta" href={siteConfig.liveDemoUrl} target="_blank" rel="noopener noreferrer">
+            Live Demo <ExternalLink size={15} aria-hidden="true" />
+          </a>
           <ThemeToggle />
         </nav>
       </header>
@@ -58,7 +54,7 @@ export function Layout() {
             <span>Healthcare-aware data observability</span>
           </div>
         </div>
-        <p>Data Engineering Capstone · {siteConfig.year} · Built by a four-person team.</p>
+        <p>Data Engineering Capstone · {siteConfig.year} · Built by a four-person team. Synthetic data only. Sentinel monitors data health, not patient health.</p>
       </footer>
     </div>
   );

@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react';
 import { SectionHeading } from '../components/SectionHeading';
-import { PlaceholderVisual } from '../components/PlaceholderVisual';
-const base = import.meta.env.BASE_URL;
-
+import { Shot } from '../components/Shot';
+import { ArchitectureFigure } from '../components/ArchitectureFigure';
 function DeepDive({
   title,
   children,
@@ -19,8 +18,6 @@ function DeepDive({
 }
 
 export function CaseStudyPage() {
-  const base = import.meta.env.BASE_URL;
-
   return (
     <div className="page-wrap">
       {/* ─────────────────────────────────────────────
@@ -61,16 +58,19 @@ export function CaseStudyPage() {
             <h3>Constraints that shaped the design</h3>
 
             <p>
-              Sentinel was built as a one-week, four-person capstone. We did
+              Sentinel was built as a four-person Data Engineering capstone. We did
               not use real hospital data, so Synthea provided synthetic FHIR
               resources that could be replayed, profiled, and deliberately
               broken in a safe environment.
             </p>
           </div>
 
-          <PlaceholderVisual
-            title="Pipeline health vs. data health"
-            description="Add a simple visual showing green infrastructure beside changing data behavior."
+          <Shot
+            file="sentinel-attention-volume"
+            state="Attention"
+            tone="attention"
+            alt="Sentinel dashboard showing an Observation volume-drop incident while the pipeline keeps running"
+            caption="The pipeline is still running. The data inside has changed, and Sentinel says so."
           />
         </div>
       </section>
@@ -107,25 +107,7 @@ export function CaseStudyPage() {
           </article>
         </div>
 
-        <figure className="case-diagram">
-          <picture>
-            <source
-              media="(max-width: 720px)"
-              srcSet={`${base}assets/diagrams/sentinel-system-architecture-mobile.svg`}
-            />
-
-            <img
-              src={`${base}assets/diagrams/sentinel-system-architecture.svg`}
-              alt="Sentinel system architecture showing the historical reference path used to establish healthy baselines and the live streaming path through Kafka, the detection engine, PostgreSQL, and the monitoring dashboard."
-              loading="lazy"
-            />
-          </picture>
-
-          <figcaption>
-            Sentinel separates baseline generation from live stream evaluation so
-            controlled failures do not redefine healthy behavior.
-          </figcaption>
-        </figure>
+        <ArchitectureFigure />
 
         <DeepDive title="Why processing time instead of event time?">
           <p>
@@ -197,27 +179,7 @@ export function CaseStudyPage() {
           </article>
         </div>
 
-        <figure className="case-diagram detector-diagram">
-          <img
-            className="diagram-dark"
-            src={`${base}assets/diagrams/sentinel-detection-engine-dark.webp`}
-            alt="Sentinel detection engine showing contract validation, missingness, numeric drift, categorical drift, and volume monitoring."
-            loading="lazy"
-          />
-
-          <img
-            className="diagram-light"
-            src={`${base}assets/diagrams/sentinel-detection-engine-light.webp`}
-            alt=""
-            aria-hidden="true"
-            loading="lazy"
-          />
-
-          <figcaption>
-            Different failure modes are evaluated independently before Sentinel decides
-            whether the window remains healthy or should open an incident.
-          </figcaption>
-        </figure>
+        
 
         <DeepDive title="Why not use one universal anomaly detector?">
           <p>
@@ -247,22 +209,28 @@ export function CaseStudyPage() {
               baseline remained unchanged.
             </p>
 
-            <h3>Volume experiment</h3>
+            <h3>What the test showed</h3>
 
             <p>
-              Normal windows were centered around approximately 10,580
-              Observation records. A controlled volume failure retained roughly
-              a quarter of the incoming rows, producing approximately 2,600
-              records. Kafka and the consumer remained operational, but Sentinel
-              opened a volume-drop incident and later resolved it after
-              recovery.
+              In the controlled capstone environment, every injected failure
+              class opened an incident: contract violation, missingness,
+              numeric drift, categorical drift and volume drop. Restoring
+              healthy data resolved the incident. These results describe a
+              repeatable synthetic test, not hospital production readiness.
+            </p>
+
+            <p>
+              The product demo shows a volume-drop run: about 5,909
+              records arrived against a baseline of roughly 10,148.5 while
+              Kafka and the consumer kept running.
             </p>
           </div>
 
-          <PlaceholderVisual
-            title="Healthy → incident → recovery"
-            description="Add three screenshots from the dashboard showing the complete incident lifecycle."
-          />
+          <div className="rd-trio">
+            <Shot file="sentinel-healthy" state="Healthy" tone="healthy" alt="Sentinel dashboard in healthy state" />
+            <Shot file="sentinel-attention-volume" state="Incident" tone="attention" alt="Sentinel dashboard showing an open Observation volume-drop incident" />
+            <Shot file="sentinel-recovered-volume" state="Recovered" tone="healthy" alt="Sentinel dashboard back to healthy with the volume-drop incident resolved" />
+          </div>
         </div>
       </section>
 
@@ -379,14 +347,13 @@ export function CaseStudyPage() {
 
         <div className="future-grid">
           {[
-            'Versioned / rolling baselines',
-            'Event-time lateness monitoring',
-            'Hysteresis & cooldowns',
-            'Alert routing & ownership',
-            'Authentication & authorization',
+            'Governed, versioned baselines',
             'More FHIR resources',
-            'Long-term trends',
-            'Distributed production deployment',
+            'Event-time monitoring',
+            'Scalable streaming',
+            'Alert routing',
+            'Authentication, IAM and auditability',
+            'CI/CD',
           ].map((item) => (
             <span key={item}>{item}</span>
           ))}
